@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.ipynb_checkpoints
+.mypy_cache
+.pytest_cache
+.vscode/
+
+# Node.js (for frontend dependencies, if any)
+node_modules/
+.npm/
+
+# Environment variables
+.env
+
+# OS generated files
+.DS_Store
+.Trashes
+Thumbs.db
+
+# Backup/dump files
+*.bak
+*.dump
+*.sql
+*.json # For MongoDB exports, if done locally
+vocabflow_db_dump/ # Specific to MongoDB dump folder

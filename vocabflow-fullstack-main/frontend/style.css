@@ -1,0 +1,1636 @@
+/* ==========================================================================
+   Design System - CSS Variables
+   ========================================================================== */
+:root {
+  /* Modern Learning App Palette */
+  --background: 220 20% 97%;
+  --foreground: 220 15% 15%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 220 15% 20%;
+
+  /* Learning-focused primary colors */
+  --primary: 210 85% 58%;
+  --primary-foreground: 0 0% 98%;
+  --primary-soft: 210 85% 65%;
+  --primary-muted: 210 60% 92%;
+
+  /* Success and learning states */
+  --success: 142 76% 46%;
+  --success-foreground: 0 0% 98%;
+  --success-soft: 142 76% 55%;
+  --success-muted: 142 50% 92%;
+
+  /* Review and attention states */
+  --warning: 38 92% 58%;
+  --warning-foreground: 0 0% 98%;
+  --warning-muted: 38 80% 92%;
+
+  /* Thêm biến Danger/Error dựa trên thiết kế hiện tại */
+  --danger-color: 0 84% 60%;
+  --danger-muted: 0 84% 92%;
+
+  --secondary: 220 15% 96%;
+  --secondary-foreground: 220 15% 25%;
+
+  --muted: 220 15% 95%;
+  --muted-foreground: 220 10% 45%;
+
+  --accent: 280 65% 85%;
+  --accent-foreground: 280 45% 25%;
+
+  --border: 220 15% 88%;
+  --input: 220 15% 92%;
+  --ring: 210 85% 58%;
+
+  /* Custom gradient stops */
+  --gradient-primary-start: 210 85% 58%;
+  --gradient-primary-end: 250 85% 65%;
+  --gradient-success-start: 142 76% 46%;
+  --gradient-success-end: 160 76% 50%;
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+}
+
+/* ==========================================================================
+   Reset and Base Styles
+   ========================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  /* Áp dụng font Inter */
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--background)),
+    hsl(var(--accent) / 0.1)
+  );
+  color: hsl(var(--foreground));
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Icon Styles */
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icon-xs {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  border: 1px solid hsl(var(--border));
+  background: transparent;
+  color: hsl(var(--foreground));
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: hsl(var(--muted));
+}
+
+.btn-ghost {
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+}
+
+.btn-ghost:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+/* Thêm style cho nút primary trong modal */
+.btn-primary {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--gradient-primary-start)),
+    hsl(var(--gradient-primary-end))
+  );
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 4px 15px -5px hsl(var(--primary) / 0.4);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -5px hsl(var(--primary) / 0.4);
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
+.btn-learned {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--success)),
+    hsl(var(--success-soft))
+  );
+  color: hsl(var(--success-foreground));
+  box-shadow: 0 0 0 0 hsl(var(--success) / 0.25);
+  transform: scale(1);
+  transition: all 0.2s ease;
+}
+
+.btn-learned:hover {
+  box-shadow: 0 10px 25px -5px hsl(var(--success) / 0.25);
+  transform: scale(1.05);
+}
+
+.btn-review {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--warning)),
+    hsl(var(--warning) / 0.8)
+  );
+  color: hsl(var(--warning-foreground));
+  box-shadow: 0 0 0 0 hsl(var(--warning) / 0.25);
+  transform: scale(1);
+  transition: all 0.2s ease;
+}
+
+.btn-review:hover {
+  box-shadow: 0 10px 25px -5px hsl(var(--warning) / 0.25);
+  transform: scale(1.05);
+}
+
+/* ==========================================================================
+   Layout
+   ========================================================================== */
+
+/* Header Styles */
+.header {
+  background: hsl(var(--card) / 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--gradient-primary-start)),
+    hsl(var(--gradient-primary-end))
+  );
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  color: hsl(var(--primary-foreground));
+}
+
+.logo-text h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  margin: 0;
+}
+
+.logo-text p {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
+
+.navigation {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-link {
+  color: hsl(var(--muted-foreground));
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  padding-bottom: 0.25rem; /* Thêm padding để border-bottom không bị dính */
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: hsl(var(--primary));
+  border-bottom: 2px solid hsl(var(--primary)); /* Đồng bộ với active */
+}
+
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .navigation {
+    display: none;
+  }
+
+  .user-area .btn span {
+    display: none;
+  }
+}
+
+/* Main Layout */
+.main {
+  padding: 2rem 0;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 2rem;
+  align-items: start; /* Giữ nguyên align-items: start */
+}
+
+@media (max-width: 1024px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sidebar Styles */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* My Decks Card (Bổ sung style cho chức năng mới) */
+.my-decks-card {
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+.my-decks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.my-decks-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+.deck-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.deck-item {
+  display: flex; /* Để icon edit/delete nằm ngang với tên deck */
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  color: hsl(var(--foreground)); /* Màu chữ mặc định */
+}
+.deck-item span {
+  /* Để tên deck chiếm hết không gian */
+  flex-grow: 1;
+}
+
+.deck-item:hover {
+  background: hsl(var(--muted));
+}
+.deck-item.active {
+  background: hsl(var(--primary-muted));
+  color: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  font-weight: 600;
+}
+.deck-item-actions {
+  /* Ẩn các nút edit/delete ban đầu */
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.deck-item:hover .deck-item-actions {
+  /* Hiện các nút khi hover vào deck item */
+  opacity: 1;
+}
+.deck-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease;
+}
+.deck-action-btn:hover {
+  color: hsl(var(--primary));
+}
+
+/* Progress Card (Quay về style cũ, ẩn/hiện bằng JS) */
+.progress-card {
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: 0 10px 30px -10px hsl(var(--primary) / 0.1);
+  display: none; /* Ẩn ban đầu, JS sẽ thêm class .visible */
+}
+.progress-card.visible {
+  display: block;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.progress-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progress-title h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0;
+}
+
+.progress-title svg {
+  color: hsl(var(--primary));
+}
+
+.progress-count {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.progress-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.progress-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.progress-label span:first-child {
+  color: hsl(var(--foreground));
+}
+
+.progress-label span:last-child {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.progress-bar {
+  height: 0.75rem;
+  background: hsl(var(--muted));
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0%;
+}
+
+.gradient-primary {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--gradient-primary-start)),
+    hsl(var(--gradient-primary-end))
+  );
+}
+
+.gradient-success {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--gradient-success-start)),
+    hsl(var(--gradient-success-end))
+  );
+}
+
+.progress-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.stat-success {
+  color: hsl(var(--success));
+}
+
+.stat-warning {
+  color: hsl(var(--warning));
+}
+
+.stat-item p {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0.25rem 0 0;
+}
+
+/* Word List Card (Quay về style cũ, ẩn/hiện bằng JS) */
+.word-list-card {
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px solid hsl(var(--border) / 0.5);
+  display: none; /* Ẩn ban đầu, JS sẽ thêm class .visible */
+}
+.word-list-card.visible {
+  display: block;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.word-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.word-list-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+  color: hsl(var(--muted-foreground));
+}
+
+.word-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 24rem;
+  overflow-y: auto;
+  /* margin-bottom: 1rem; */ /* Không cần margin-bottom nếu không có summary */
+}
+
+.word-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  transition: all 0.2s ease;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer; /* Cho phép click để nhảy đến từ */
+}
+
+.word-item.learned {
+  background: hsl(var(--success-muted));
+  color: hsl(var(--success-foreground)); /* Màu chữ cho learned */
+  border-color: hsl(var(--success) / 0.2);
+}
+
+.word-item.reviewed {
+  /* Màu cho từ đã qua nhưng chưa học */
+  background: hsl(var(--warning-muted));
+  color: hsl(var(--warning-foreground));
+  border-color: hsl(var(--warning) / 0.2);
+}
+
+.word-item.current {
+  background: hsl(var(--primary-muted));
+  color: hsl(var(--primary-foreground)); /* Màu chữ cho current */
+  /* ring: 2px solid hsl(var(--primary) / 0.3); */ /* Có thể bỏ ring nếu không thích */
+  transform: scale(1.05);
+}
+
+.word-item:hover {
+  box-shadow: 0 2px 8px -2px hsl(var(--primary) / 0.1);
+}
+
+/* Các icon trạng thái trong Word List */
+.word-status-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem; /* Kích thước icon */
+  height: 1rem;
+}
+.word-item.current .word-status-icon svg {
+  color: hsl(var(--primary));
+}
+.word-item.learned .word-status-icon svg {
+  color: hsl(var(--success));
+}
+/* Cho từ reviewed một icon nhẹ nhàng hơn, ví dụ như một dấu chấm */
+.word-item.reviewed .word-status-icon svg {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.6;
+}
+/* Icon cho trạng thái pending (chưa học tới) */
+.word-item.pending .word-status-icon {
+  border: 2px solid hsl(var(--muted-foreground) / 0.3);
+  border-radius: 50%;
+  background: hsl(var(--muted));
+}
+
+.word-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.word-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.word-meaning {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.word-number {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Placeholder cho Learning Area khi chưa chọn deck (Bổ sung style) */
+.learning-area .placeholder {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: hsl(var(--card) / 0.5);
+  border: 2px dashed hsl(var(--border));
+  border-radius: 1rem;
+}
+.learning-area .placeholder h2 {
+  margin-bottom: 0.5rem;
+  color: hsl(var(--foreground));
+}
+.learning-area .placeholder p {
+  color: hsl(var(--muted-foreground));
+}
+.learning-content {
+  display: none; /* Ẩn ban đầu, JS sẽ thêm class .visible */
+  flex-direction: column;
+  gap: 2rem;
+}
+.learning-content.visible {
+  display: flex;
+}
+
+/* Learning Area Controls */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.word-indicator {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Flashcard Styles (SỬA LỖI QUAY KHI HOVER) */
+.flashcard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  font-weight: 500;
+  font-synthesis-weight: auto;
+}
+
+.flip-card {
+  perspective: 1000px;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 20rem;
+  text-align: center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  -webkit-backface-visibility: hidden; /* Dùng cho Safari */
+  backface-visibility: hidden;
+  border-radius: 1rem;
+  cursor: pointer;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+.learning-card {
+  background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--card) / 0.8));
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: 0 25px 50px -12px hsl(var(--primary) / 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  /* Chỉ transition box-shadow khi hover, không phải transform */
+  transition: box-shadow 0.3s ease;
+}
+
+/*Chỉ có hiệu ứng đổ bóng khi hover, không có chuyển động */
+.learning-card:hover {
+  box-shadow: 0 25px 50px -12px hsl(var(--primary) / 0.25);
+}
+
+.flip-card-back {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary-muted)),
+    hsl(var(--accent) / 0.2)
+  );
+  border-color: hsl(var(--primary) / 0.2);
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.word-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.word-text {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+/* Bổ sung style cho phiên âm */
+.word-ipa {
+  font-size: 1rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.25rem;
+  font-family: "Inter", "Lucida Sans Unicode", "Arial Unicode MS", sans-serif; /* Font hỗ trợ IPA */
+}
+
+.meaning-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.meaning-text {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0;
+  text-align: center;
+}
+
+.example-box {
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius);
+  padding: 1rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+  width: 100%;
+  text-align: left; /* Để các dòng ví dụ không bị căn giữa */
+}
+/* Bổ sung style cho ví dụ song ngữ */
+.example-text {
+  font-size: 0.875rem;
+  font-style: italic;
+  line-height: 1.6;
+  margin: 0;
+}
+.example-en {
+  color: hsl(var(--card-foreground)); /* Ví dụ tiếng Anh nổi bật hơn */
+}
+.example-vi {
+  color: hsl(var(--muted-foreground)); /* Ví dụ tiếng Việt nhạt hơn */
+  margin-top: 0.5rem; /* Khoảng cách giữa 2 ví dụ */
+}
+
+.card-hint {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
+
+.pronunciation-btn {
+  color: hsl(var(--primary));
+}
+
+.pronunciation-btn:hover {
+  color: hsl(var(--primary-soft));
+  background: hsl(var(--primary-muted));
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+}
+
+.action-buttons.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Navigation Controls */
+.navigation-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.progress-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: hsl(var(--muted));
+  border-radius: var(--radius);
+}
+
+.progress-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: hsl(var(--muted-foreground) / 0.3);
+  transition: background-color 0.2s ease;
+}
+
+.progress-dot.current {
+  background: hsl(var(--primary));
+}
+
+.progress-dot.completed {
+  background: hsl(var(--success));
+}
+
+/* Completion Message */
+.completion-message {
+  display: none;
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--success) / 0.1),
+    hsl(var(--primary) / 0.1)
+  );
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--success) / 0.2);
+}
+
+.completion-message.show {
+  display: block;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.completion-message h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: hsl(var(--success));
+  margin: 0 0 0.5rem;
+}
+
+.completion-message p {
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
+
+/* ==========================================================================
+   Modal & Form (Bổ sung style cho chức năng mới)
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: hsla(var(--foreground), 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+.modal-overlay:not(.hidden) {
+  opacity: 1;
+  visibility: visible;
+}
+.modal {
+  background: hsl(var(--card));
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 30px hsla(var(--foreground), 0.1);
+  width: 90%;
+  max-width: 60rem; /* Tăng chiều rộng để dễ nhập liệu */
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.modal-overlay:not(.hidden) .modal {
+  transform: scale(1);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid hsl(var(--border));
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+.modal-header h3 {
+  margin: 0;
+}
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease;
+}
+.close-btn:hover {
+  color: hsl(var(--foreground));
+}
+.modal-body {
+  overflow-y: auto;
+  padding-right: 1rem; /* Tạo khoảng trống cho scrollbar */
+  margin-right: -1rem; /* Kéo nội dung ra ngoài để scrollbar không bị đè */
+}
+.form-group {
+  margin-bottom: 1rem;
+}
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--foreground));
+}
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  font-size: 1rem;
+  color: hsl(var(--foreground));
+}
+#word-inputs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Khoảng cách giữa các nhóm từ */
+  margin: 1rem 0;
+}
+.word-input-group {
+  display: grid;
+  /* 4 cột chính và 1 cột auto cho nút xóa */
+  grid-template-columns: 1fr 1fr 1.5fr auto;
+  gap: 0.75rem;
+  align-items: start; /* Căn trên cùng */
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed hsl(var(--border) / 0.5); /* Đường phân cách giữa các từ */
+}
+/* Tạo nhãn và input riêng biệt cho từng trường trong modal */
+.word-input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.word-input-field label {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0;
+}
+.word-input-field input {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+.remove-word-btn {
+  margin-top: 1.75rem; /* Căn chỉnh với input thứ 2 trong field */
+  background: none;
+  border: none;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: color 0.2s;
+}
+.remove-word-btn:hover {
+  color: hsl(var(--warning));
+}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+/* ==========================================================================
+   Utility & Animation
+   ========================================================================== */
+.hidden {
+  display: none !important;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Media Queries cho modal */
+@media (max-width: 768px) {
+  .word-input-group {
+    grid-template-columns: 1fr; /* Stack các trường trên mobile */
+  }
+  .remove-word-btn {
+    margin-top: 0.5rem; /* Điều chỉnh vị trí nút xóa */
+    justify-self: end; /* Căn sang phải */
+  }
+}
+/* Custom Styles for Auth Modals */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+}
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid hsl(var(--border));
+}
+.divider:not(:empty)::before {
+  margin-right: 0.75rem;
+}
+.divider:not(:empty)::after {
+  margin-left: 0.75rem;
+}
+
+.btn-facebook {
+  background-color: #1877f2; /* Facebook blue */
+  color: #ffffff;
+}
+.btn-facebook:hover {
+  background-color: #166fe5;
+}
+
+.auth-message {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--foreground); /* Default color */
+}
+.auth-message.success {
+  color: hsl(var(--success));
+}
+.auth-message.error {
+  color: hsl(var(--warning));
+}
+
+/* ==========================================================================
+   VIEW-SPECIFIC STYLES (Styles cho các giao diện Danh sách từ, Tiến độ, Thống kê, Cài đặt)
+   ========================================================================== */
+
+/* Page View Container */
+.page-view {
+  padding: 1rem 0;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 2rem;
+}
+
+.data-card {
+  /* Dùng lại styles từ progress-card nhưng bỏ ẩn/hiện */
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: 0 5px 15px -5px hsl(var(--primary) / 0.1);
+  height: 100%; /* Đảm bảo các card trong grid có cùng chiều cao */
+}
+
+/* ==========================================================================
+   Word List View (Danh Sách Từ)
+   ========================================================================== */
+.view-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.search-input,
+.select-input {
+  padding: 0.75rem 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  flex-grow: 1;
+  min-width: 150px;
+}
+.search-input:focus,
+.select-input:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.5);
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.data-table th {
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.data-table tbody tr:hover {
+  background: hsl(var(--muted) / 0.5);
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.status-learned {
+  background: hsl(var(--success-muted));
+  color: hsl(var(--success));
+}
+.status-unlearned {
+  background: hsl(var(--warning-muted));
+  color: hsl(var(--warning));
+}
+.status-review {
+  background: hsl(var(--danger-muted));
+  color: hsl(var(--danger-color));
+}
+
+/* ==========================================================================
+   Progress View (Tiến Độ)
+   ========================================================================== */
+.progress-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Chia Tổng quan (2/3) và Biểu đồ (1/3) */
+  gap: 1.5rem;
+}
+
+.progress-grid .large-card {
+  grid-column: 1 / -1; /* Total summary full-width on top */
+}
+
+.progress-summary {
+  display: flex;
+  flex-direction: column;
+}
+.progress-summary h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: hsl(var(--primary));
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.stat-item-lg {
+  padding: 1rem;
+  border-radius: var(--radius);
+  background: hsl(var(--muted));
+  transition: transform 0.2s;
+}
+.stat-item-lg:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 15px -5px hsl(var(--muted-foreground) / 0.1);
+}
+
+.stat-item-lg .stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+.stat-item-lg p {
+  font-size: 0.85rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.chart-placeholder {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  border-radius: var(--radius);
+  font-style: italic;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.chart-card h3 {
+  font-size: 1rem;
+  color: hsl(var(--foreground));
+  margin-bottom: 1rem;
+}
+
+.activity-list {
+  list-style: none;
+  padding: 0;
+}
+.activity-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px dashed hsl(var(--border) / 0.5);
+  font-size: 0.95rem;
+  color: hsl(var(--foreground));
+}
+.activity-list li:last-child {
+  border-bottom: none;
+}
+.activity-date {
+  font-weight: 600;
+  color: hsl(var(--primary));
+  margin-right: 0.5rem;
+}
+
+/* ==========================================================================
+   Statistics View (Thống Kê)
+   ========================================================================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.stats-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+.stat-highlight {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: hsl(var(--success-soft));
+  margin-top: 1rem;
+}
+
+.text-secondary {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9rem;
+}
+
+/* Table in Stats */
+.stats-grid .data-table th,
+.stats-grid .data-table td {
+  padding: 0.75rem;
+}
+.stats-grid .data-table th {
+  font-size: 0.75rem;
+}
+
+/* ==========================================================================
+   Settings View (Cài Đặt)
+   ========================================================================== */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-section h3 {
+  font-size: 1.2rem;
+  color: hsl(var(--primary));
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid hsl(var(--border));
+  margin-bottom: 1rem;
+}
+
+.settings-section .btn {
+  align-self: flex-start; /* Nút chỉ chiếm đủ chiều rộng nội dung */
+}
+
+.btn-danger-outline {
+  background: transparent;
+  color: hsl(var(--danger-color));
+  border: 1px solid hsl(var(--danger-color) / 0.3);
+}
+.btn-danger-outline:hover {
+  background: hsl(var(--danger-muted));
+  color: hsl(var(--danger-color));
+}
+
+.btn-review {
+  /* Overrides btn-review from main learning area for a specific setting button */
+  background: hsl(var(--danger-muted));
+  color: hsl(var(--danger-color));
+  border: 1px solid hsl(var(--danger-color) / 0.3);
+}
+.btn-review:hover {
+  background: hsl(var(--danger-color) / 0.2);
+}
+
+.setting-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.select-input {
+  padding: 0.75rem 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  flex-grow: 1;
+  min-width: 150px;
+
+  /* Custom select arrow */
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+/* ==========================================================================
+   Responsive Overrides
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) {
+  .progress-grid,
+  .stats-grid,
+  .summary-stats {
+    grid-template-columns: 1fr; /* Stack tất cả trên di động */
+  }
+  .progress-grid .large-card {
+    grid-column: span 1;
+  }
+  .view-controls {
+    flex-direction: column;
+  }
+}
+/* ==========================================================================
+   Responsive Card (Custom User Rules)
+   ========================================================================== */
+
+/* PC – mặc định */
+.card {
+  width: 600px;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .card {
+    width: 100%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .card {
+    padding: 10px;
+  }
+}
+/* ==========================================================================
+   Chatbot Styles
+   ========================================================================== */
+
+/* Floating Action Button */
+.fab-chat {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--gradient-primary-start)),
+    hsl(var(--gradient-primary-end))
+  );
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 8px 15px -5px hsl(var(--primary) / 0.6);
+  border: none;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+/* ==========================================================================
+   Chatbot Styles
+   ========================================================================== */
+
+/* Floating Action Button */
+.fab-chat {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--gradient-primary-start)),
+    hsl(var(--gradient-primary-end))
+  );
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 8px 15px -5px hsl(var(--primary) / 0.6);
+  border: none;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+.fab-chat:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 20px -5px hsl(var(--primary) / 0.8);
+}
+.fab-chat svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Chat Modal Override */
+.chat-modal-content {
+  max-width: 450px; /* Kích thước tối đa cho khung chat */
+  height: 80vh; /* Chiều cao cố định */
+  display: flex;
+  flex-direction: column;
+}
+.chat-messages-container {
+  flex-grow: 1; /* Cho phép container tin nhắn chiếm hết không gian */
+  overflow-y: auto;
+  padding: 1rem;
+  background: hsl(var(--background)); /* Nền cho khung chat */
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+.chat-input-area {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  padding-top: 0; /* Bỏ padding-top mặc định của modal-footer */
+  border-top: none;
+  margin-top: 0;
+}
+.chat-input-area textarea {
+  flex-grow: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--card));
+  resize: none; /* Không cho phép người dùng thay đổi kích thước thủ công */
+  min-height: 2.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: height 0.2s;
+}
+
+/* Chat Bubbles */
+.chat-message {
+  max-width: 80%;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 1.2rem;
+  line-height: 1.4;
+  word-wrap: break-word; /* Đảm bảo tin nhắn dài không tràn ra ngoài */
+}
+.chat-message p {
+  margin: 0;
+}
+
+.chat-message.user {
+  margin-left: auto;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-bottom-right-radius: 0.25rem;
+}
+.chat-message.bot {
+  margin-right: auto;
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  border-bottom-left-radius: 0.25rem;
+}
+
+/* Media Query cho Mobile */
+@media (max-width: 500px) {
+  .fab-chat {
+    bottom: 1rem;
+    right: 1rem;
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  .chat-modal-content {
+    height: 95vh;
+    border-radius: 0;
+  }
+}

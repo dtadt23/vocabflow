@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VocabFlow - Học Từ Vựng Thông Minh</title>
+
+    <!-- THÊM FONT INTER TỪ GOOGLE FONTS (ĐẸP VÀ ĐỒNG BỘ) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!----------------------------------------------------->
+
+    <link rel="stylesheet" href="./style.css" />
+    <!-- thư viện orc cho tải ảnh lên   -->
+    <script src="https://unpkg.com/tesseract.js@4.1.0/dist/tesseract.min.js"></script>
+    <!-- Thư viện PDF.js cho đọc file PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>
+      // Cần định nghĩa workerSrc cho PDF.js để nó hoạt động đúng cách
+      if (typeof pdfjsLib !== "undefined") {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+      }
+    </script>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="container">
+        <div class="header-content">
+          <!-- Logo -->
+          <div class="logo-section">
+            <div class="logo-icon">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"
+                />
+              </svg>
+            </div>
+            <div class="logo-text">
+              <h1>VocabFlow</h1>
+              <p>Học Từ Vựng Thông Minh</p>
+            </div>
+          </div>
+
+          <!-- Navigation -->
+          <nav class="navigation">
+            <!-- Thêm data-view-target để JS dễ dàng điều hướng -->
+            <a href="#" class="nav-link active" data-view-target="dashboard"
+              >Bảng Điều Khiển</a
+            >
+            <a href="#" class="nav-link" data-view-target="wordlist"
+              >Danh Sách Từ</a
+            >
+            <a href="#" class="nav-link" data-view-target="progress">Tiến Độ</a>
+          </nav>
+
+          <!-- User Area -->
+          <div class="user-area">
+            <!-- Thêm data-view-target cho các nút này -->
+            <button class="btn btn-ghost" data-view-target="statistics">
+              <svg
+                class="icon-sm"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 3v5h5" />
+                <path d="m3 8 6-6 5.5 5.5L21 1" />
+              </svg>
+              Thống Kê
+            </button>
+            <button class="btn btn-ghost" data-view-target="settings">
+              <svg
+                class="icon-sm"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"
+                />
+              </svg>
+              Cài Đặt
+            </button>
+            <button class="btn btn-outline" id="open-login-modal-btn">
+              <svg
+                class="icon-sm"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Đăng Nhập
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="container">
+        <!-- ========================================================= -->
+        <!-- 1. Dashboard View (Bảng Điều Khiển/Học Tập) -->
+        <!-- *Sử dụng main-grid để có sidebar* -->
+        <!-- ========================================================= -->
+        <div class="main-grid" id="dashboard-view">
+          <!-- Sidebar -->
+          <div class="sidebar">
+            <!-- Thẻ Bộ từ của tôi -->
+            <div class="my-decks-card">
+              <div class="my-decks-header">
+                <h3>Bộ Từ Của Tôi</h3>
+                <button class="btn btn-outline" id="create-deck-btn">
+                  Tạo Mới
+                </button>
+              </div>
+              <div class="deck-list" id="deck-list">
+                <!-- Các mục Bộ từ sẽ được tạo bởi JavaScript -->
+              </div>
+            </div>
+
+            <!-- Thẻ Tiến độ (Phiên bản Dashboard) -->
+            <div class="progress-card visible" id="progress-card">
+              <!-- Nội dung thẻ tiến độ dashboard (Giữ nguyên) -->
+              <div class="progress-header">
+                <div class="progress-title">
+                  <svg
+                    class="icon-sm"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                  <h3>Tiến Độ Học Tập</h3>
+                </div>
+                <div class="progress-count">
+                  <span id="current-word">0</span> /
+                  <span id="total-words">0</span> từ
+                </div>
+              </div>
+
+              <div class="progress-bars">
+                <div class="progress-item">
+                  <div class="progress-label">
+                    <span>Tiến độ Phiên</span>
+                    <span id="session-percentage">0%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div
+                      class="progress-fill gradient-primary"
+                      id="session-progress"
+                    ></div>
+                  </div>
+                </div>
+
+                <div class="progress-item">
+                  <div class="progress-label">
+                    <span>Từ Đã Nắm Vững</span>
+                    <span id="learned-percentage">0%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div
+                      class="progress-fill gradient-success"
+                      id="learned-progress"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="progress-stats">
+                <div class="stat-item">
+                  <div class="stat-value">
+                    <svg
+                      class="icon-xs"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"
+                      />
+                    </svg>
+                    <span id="reviewed-count">0</span>
+                  </div>
+                  <p>Đã Xem</p>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value stat-success">
+                    <svg
+                      class="icon-xs"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="22,7 13.5,15.5 8.5,10.5 2,17" />
+                      <polyline points="16,7 22,7 22,13" />
+                    </svg>
+                    <span id="learned-count">0</span>
+                  </div>
+                  <p>Đã Học</p>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value stat-warning">
+                    <span id="remaining-count">0</span>
+                  </div>
+                  <p>Cần Học</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Thẻ Danh sách từ (Phiên bản Dashboard) -->
+            <div class="word-list-card visible" id="word-list-card">
+              <div class="word-list-header">
+                <h3>Danh Sách Từ</h3>
+                <span class="badge" id="word-list-badge">0 từ</span>
+              </div>
+              <div class="word-list" id="word-list">
+                <!-- Các mục từ sẽ được tạo bởi JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Khu vực Học tập (Learning Area) -->
+          <div class="learning-area">
+            <div class="placeholder" id="placeholder">
+              <h2>Chào mừng đến với VocabFlow!</h2>
+              <p>Chọn một bộ từ để bắt đầu học, hoặc tạo một bộ từ mới.</p>
+            </div>
+
+            <div class="learning-content" id="learning-content">
+              <!-- Điều khiển -->
+              <div class="controls">
+                <div class="control-buttons">
+                  <button class="btn btn-outline" id="shuffle-btn">
+                    <svg
+                      class="icon-sm"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M16 3h5v5" />
+                      <path d="M4 20 21 3" />
+                      <path d="M21 16v5h-5" />
+                      <path d="M15 15l6 6" />
+                      <path d="M4 4l5 5" />
+                    </svg>
+                    Xáo Trộn
+                  </button>
+                  <button class="btn btn-outline" id="reset-btn">
+                    <svg
+                      class="icon-sm"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+                      />
+                      <path d="M21 3v5h-5" />
+                      <path
+                        d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
+                      />
+                      <path d="M8 16H3v5" />
+                    </svg>
+                    Đặt Lại
+                  </button>
+                </div>
+                <div class="word-indicator">
+                  Từ <span id="current-indicator">0</span> trên
+                  <span id="total-indicator">0</span>
+                </div>
+              </div>
+
+              <!-- Thẻ từ -->
+              <div class="flashcard-container">
+                <div class="flip-card" id="flashcard">
+                  <div class="flip-card-inner">
+                    <!-- Mặt trước thẻ -->
+                    <div class="flip-card-front learning-card">
+                      <div class="card-content">
+                        <div class="word-section">
+                          <!-- Thêm lang="en" và translate="no" -->
+                          <h2
+                            class="word-text"
+                            id="word-text"
+                            lang="en"
+                            translate="no"
+                          ></h2>
+                          <p
+                            class="word-ipa"
+                            id="word-ipa"
+                            lang="en"
+                            translate="no"
+                          ></p>
+                          <p class="card-hint">Nhấp để xem nghĩa</p>
+                        </div>
+                        <button
+                          class="btn btn-ghost pronunciation-btn"
+                          id="pronunciation-btn"
+                        >
+                          <svg
+                            class="icon-sm"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path d="M11 5 6 9H2v6h4l5 4V5z" />
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                          </svg>
+                          Phát Âm
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Mặt sau thẻ -->
+                    <div class="flip-card-back learning-card">
+                      <div class="card-content">
+                        <div class="meaning-section">
+                          <!-- Thêm lang="vi" và translate="no" để trình duyệt không dịch lại nghĩa tiếng Việt -->
+                          <h3
+                            class="meaning-text"
+                            id="meaning-text"
+                            lang="vi"
+                            translate="no"
+                          ></h3>
+                          <div class="example-box" id="example-box">
+                            <!-- Ví dụ sẽ được chèn bởi JavaScript, với lang="en" và lang="vi" -->
+                          </div>
+                        </div>
+                        <p class="card-hint">Nhấp để lật lại</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Nút hành động -->
+                <div class="action-buttons" id="action-buttons">
+                  <button class="btn btn-review" id="review-btn">
+                    <svg
+                      class="icon-sm"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M18 6 6 18" />
+                      <path d="m6 6 12 12" />
+                    </svg>
+                    Cần Xem Lại
+                  </button>
+                  <button class="btn btn-ghost" id="flip-back-btn">
+                    <svg
+                      class="icon-sm"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+                      />
+                      <path d="M21 3v5h-5" />
+                      <path
+                        d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
+                      />
+                      <path d="M8 16H3v5" />
+                    </svg>
+                    Lật
+                  </button>
+                  <button class="btn btn-learned" id="learned-btn">
+                    <svg
+                      class="icon-sm"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    Đã Học
+                  </button>
+                </div>
+              </div>
+
+              <!-- Điều khiển điều hướng -->
+              <div class="navigation-controls">
+                <button class="btn btn-outline btn-lg" id="prev-btn">
+                  <svg
+                    class="icon-sm"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                  Trước
+                </button>
+
+                <div class="progress-dots" id="progress-dots">
+                  <!-- Các chấm tiến độ sẽ được tạo bởi JavaScript -->
+                </div>
+
+                <button class="btn btn-outline btn-lg" id="next-btn">
+                  Tiếp
+                  <svg
+                    class="icon-sm"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Thông báo hoàn thành -->
+              <div class="completion-message" id="completion-message">
+                <h2>Chúc mừng! 🎉</h2>
+                <p>Bạn đã hoàn thành bộ từ này!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- 2. Danh Sách Từ View (wordlist-view) -->
+        <!-- *Sử dụng page-view full-width, ẩn/hiện bằng JS* -->
+        <!-- ========================================================= -->
+        <div class="page-view hidden" id="wordlist-view">
+          <h2 class="page-title">Danh Sách Tất Cả Từ Vựng</h2>
+          <p class="page-subtitle">
+            Xem, tìm kiếm và quản lý tất cả các từ trong thư viện của bạn.
+          </p>
+
+          <div class="view-controls">
+            <input
+              type="text"
+              placeholder="Tìm kiếm từ vựng..."
+              class="search-input"
+              id="wordlist-search"
+            />
+            <select class="select-input" id="wordlist-deck-filter">
+              <option value="all">Tất cả Bộ Từ</option>
+            </select>
+            <select class="select-input" id="wordlist-status-filter">
+              <option value="all">Tất cả Trạng thái</option>
+              <option value="learned">Đã Học</option>
+              <option value="unlearned">Chưa Học</option>
+            </select>
+            <button class="btn btn-primary" id="export-wordlist-btn">
+              <svg
+                class="icon-sm"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 2v14M17 8l-5-5-5 5M12 16h9M3 16h6" />
+              </svg>
+              Xuất File
+            </button>
+          </div>
+
+          <!-- Bảng Danh Sách Từ -->
+          <div class="data-card table-responsive">
+            <table class="data-table" id="full-wordlist-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Từ Vựng</th>
+                  <th>Nghĩa</th>
+                  <th>Ví dụ (EN)</th>
+                  <th>Bộ Từ</th>
+                  <th>Trạng Thái</th>
+                  <th>Hành Động</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Dữ liệu sẽ được chèn bởi JavaScript -->
+                <!-- Thêm dữ liệu giả để kiểm tra giao diện -->
+                <tr>
+                  <td>1</td>
+                  <td>Serendipity</td>
+                  <td>Sự tình cờ may mắn</td>
+                  <td>Finding that old book was pure serendipity.</td>
+                  <td>Cơ Bản</td>
+                  <td>
+                    <span class="status-badge status-learned">Đã Học</span>
+                  </td>
+                  <td>
+                    <button class="btn btn-ghost">
+                      <svg
+                        class="icon-sm"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>Ephemeral</td>
+                  <td>Kéo dài rất ngắn</td>
+                  <td>The beauty of cherry blossoms is ephemeral.</td>
+                  <td>Cơ Bản</td>
+                  <td>
+                    <span class="status-badge status-unlearned">Chưa Học</span>
+                  </td>
+                  <td>
+                    <button class="btn btn-ghost">
+                      <svg
+                        class="icon-sm"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- 3. Tiến Độ View (progress-view) -->
+        <!-- *Sử dụng page-view full-width, ẩn/hiện bằng JS* -->
+        <!-- ========================================================= -->
+        <div class="page-view hidden" id="progress-view">
+          <h2 class="page-title">Tiến Độ Học Tập Chi Tiết</h2>
+          <p class="page-subtitle">
+            Theo dõi thành tích và xu hướng học từ vựng của bạn.
+          </p>
+
+          <div class="progress-grid">
+            <!-- Thẻ Tổng quan (Lớn) -->
+            <div class="data-card large-card progress-summary">
+              <h3>Tổng Quan Thành Tích</h3>
+              <div class="summary-stats">
+                <div class="stat-item-lg">
+                  <div class="stat-value stat-success" id="total-learned-count">
+                    500
+                  </div>
+                  <p>Tổng Từ Đã Nắm Vững</p>
+                </div>
+                <div class="stat-item-lg">
+                  <div class="stat-value" id="current-streak">30 Ngày</div>
+                  <p>Chuỗi Học Tập Hiện Tại</p>
+                </div>
+                <div class="stat-item-lg">
+                  <div
+                    class="stat-value stat-primary"
+                    id="average-weekly-words"
+                  >
+                    75
+                  </div>
+                  <p>Từ Học Trung Bình / Tuần</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Biểu đồ Nắm vững (Placeholder) -->
+            <div class="data-card chart-card">
+              <h3>Phân Bổ Độ Khó</h3>
+              <div class="chart-placeholder">
+                Biểu đồ Trình độ Nắm vững (Dễ, Vừa, Khó)
+              </div>
+            </div>
+
+            <!-- Biểu đồ Tiến độ Hàng ngày (Placeholder) -->
+            <div class="data-card chart-card">
+              <h3>Từ Học Được Theo Ngày (7 Ngày)</h3>
+              <div class="chart-placeholder">
+                Biểu đồ thanh Từ đã học trong tuần
+              </div>
+            </div>
+
+            <!-- Thẻ Hoạt động gần đây -->
+            <div class="data-card full-width">
+              <h3>Hoạt Động Gần Đây</h3>
+              <ul class="activity-list">
+                <li>
+                  <span class="activity-date">Hôm nay</span>: Đã hoàn thành 15
+                  từ trong "Từ Vựng IELTS".
+                </li>
+                <li>
+                  <span class="activity-date">Hôm qua</span>: Xem lại 45 từ.
+                  Chuỗi 30 ngày!
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- 4. Thống Kê View (statistics-view) -->
+        <!-- *Sử dụng page-view full-width, ẩn/hiện bằng JS* -->
+        <!-- ========================================================= -->
+        <div class="page-view hidden" id="statistics-view">
+          <h2 class="page-title">Thống Kê Chuyên Sâu</h2>
+          <p class="page-subtitle">
+            Phân tích chuyên sâu về hiệu suất học tập của bạn theo thời gian.
+          </p>
+
+          <div class="stats-grid">
+            <!-- Biểu đồ Lượng từ theo thời gian -->
+            <div class="data-card chart-card full-width">
+              <h3>Tốc độ Nắm Vững (Từ Học Được / Tháng)</h3>
+              <div class="chart-placeholder">
+                Biểu đồ đường Lượng từ đã học theo thời gian
+              </div>
+            </div>
+
+            <!-- Bảng xếp hạng Deck -->
+            <div class="data-card">
+              <h3>Hiệu suất Bộ Từ (Deck)</h3>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Bộ Từ</th>
+                      <th>Tổng Từ</th>
+                      <th>Đã Học (%)</th>
+                      <th>Tỷ lệ Lật</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>IELTS</td>
+                      <td>1200</td>
+                      <td>45%</td>
+                      <td>1.2</td>
+                    </tr>
+                    <tr>
+                      <td>TOEFL</td>
+                      <td>800</td>
+                      <td>62%</td>
+                      <td>1.5</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Thẻ Phân tích Thời gian Tốt nhất -->
+            <div class="data-card">
+              <h3>Thời Điểm Học Tốt Nhất</h3>
+              <p class="text-secondary">
+                Dựa trên các phiên học thành công nhất.
+              </p>
+              <p class="stat-highlight">
+                8:00 PM - 10:00 PM (80% Tỷ lệ thành công)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- 5. Cài Đặt View (settings-view) -->
+        <!-- *Sử dụng page-view full-width, ẩn/hiện bằng JS* -->
+        <!-- ========================================================= -->
+        <div class="page-view hidden" id="settings-view">
+          <h2 class="page-title">Cài Đặt Tài Khoản & Ứng Dụng</h2>
+          <p class="page-subtitle">
+            Quản lý thông tin cá nhân, giao diện và dữ liệu của bạn.
+          </p>
+
+          <div class="settings-grid">
+            <!-- Thẻ Tài khoản -->
+            <div class="data-card settings-section">
+              <h3>Thông Tin Tài Khoản</h3>
+              <div class="form-group">
+                <label for="setting-email">Email / Tên người dùng</label>
+                <input
+                  type="email"
+                  id="setting-email"
+                  value="user@example.com"
+                  disabled
+                />
+              </div>
+              <button class="btn btn-outline">Đổi Mật Khẩu</button>
+              <button class="btn btn-danger-outline">Xóa Tài Khoản</button>
+            </div>
+
+            <!-- Thẻ Giao diện -->
+            <div class="data-card settings-section">
+              <h3>Giao Diện</h3>
+              <div class="form-group">
+                <label for="setting-theme">Chủ Đề</label>
+                <select id="setting-theme" class="select-input">
+                  <option value="light">Sáng (Mặc định)</option>
+                  <option value="dark">Tối</option>
+                  <option value="system">Theo Hệ Thống</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="setting-language">Ngôn Ngữ Ứng Dụng</label>
+                <select id="setting-language" class="select-input">
+                  <option value="vi">Tiếng Việt</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Thẻ Quản lý Dữ liệu -->
+            <div class="data-card settings-section">
+              <h3>Quản Lý Dữ Liệu</h3>
+              <p class="text-secondary">
+                Sao lưu, phục hồi hoặc xóa dữ liệu ứng dụng.
+              </p>
+              <div class="setting-actions">
+                <button class="btn btn-outline">
+                  <svg
+                    class="icon-sm"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Tải Dữ Liệu Xuống (JSON)
+                </button>
+                <button class="btn btn-outline">
+                  <svg
+                    class="icon-sm"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  Nhập Dữ Liệu Lên
+                </button>
+                <button class="btn btn-review">
+                  Đặt Lại Tiến Độ (Mọi Deck)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating Action Button (FAB) cho Chatbot -->
+      <button class="fab-chat" id="open-chat-btn" title="Chat với AI">
+        <svg
+          class="icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+          />
+        </svg>
+      </button>
+    </main>
+
+    <!-- Modal Tạo/Sửa Bộ từ -->
+    <div class="modal-overlay hidden" id="deck-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="modal-title">Tạo Bộ Từ Mới</h3>
+          <button class="close-btn" id="close-deck-modal-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="deck-name">Tên Bộ Từ</label
+            ><input
+              type="text"
+              id="deck-name"
+              placeholder="Ví dụ: Từ vựng IELTS"
+            />
+          </div>
+          <h4>Các Từ</h4>
+          <!-- Đây là nơi các nút nhập liệu file/ảnh sẽ được thêm vào -->
+          <div
+            class="input-options-row"
+            style="
+              display: flex;
+              gap: 1rem;
+              margin-bottom: 1rem;
+              flex-wrap: wrap;
+            "
+          >
+            <button class="btn btn-outline" id="import-image-btn">
+              <svg
+                class="icon-sm"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                <circle cx="9" cy="9" r="2"></circle>
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+              </svg>
+              Từ Ảnh
+            </button>
+            <button class="btn btn-outline" id="import-pdf-btn">
+              <svg
+                class="icon-sm"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+                ></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <line x1="10" y1="9" x2="8" y2="9"></line>
+              </svg>
+              Từ PDF
+            </button>
+          </div>
+          <div id="word-inputs-container"></div>
+          <button class="btn btn-outline" id="add-word-field-btn">
+            + Thêm Từ
+          </button>
+          <!-- Trạng thái OCR -->
+          <div
+            class="ocr-status hidden"
+            id="ocr-status"
+            style="margin-top: 1rem"
+          >
+            <p id="ocr-message">Đang xử lý...</p>
+            <progress id="ocr-progress" value="0" max="100"></progress>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="cancel-deck-modal-btn">Hủy</button>
+          <button class="btn btn-primary" id="save-deck-btn">Lưu Bộ Từ</button>
+        </div>
+      </div>
+    </div>
+    <!-- Modal Đăng Ký -->
+    <div class="modal-overlay hidden" id="register-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="register-modal-title">Đăng Ký Tài Khoản</h3>
+          <button class="close-btn" id="close-register-modal-btn">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="register-email">Email</label>
+            <input
+              type="email"
+              id="register-email"
+              placeholder="Địa chỉ email của bạn"
+            />
+          </div>
+          <div class="form-group">
+            <label for="register-password">Mật khẩu</label>
+            <input
+              type="password"
+              id="register-password"
+              placeholder="Tạo mật khẩu"
+            />
+          </div>
+          <p class="auth-message hidden" id="register-message"></p>
+          <button
+            class="btn btn-primary"
+            id="register-email-btn"
+            style="width: 100%; margin-top: 1rem"
+          >
+            Đăng Ký bằng Email
+          </button>
+
+          <div class="divider">Hoặc</div>
+
+          <button
+            class="btn btn-facebook"
+            id="register-facebook-btn"
+            style="width: 100%; margin-top: 1rem"
+          >
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.588-1.333h2.412v-3h-3.473c-4.045 0-5.527 1.838-5.527 5.009v2.991z"
+              />
+            </svg>
+            Đăng Ký bằng Facebook
+          </button>
+        </div>
+        <div class="modal-footer">
+          <p>
+            Đã có tài khoản?
+            <a href="#" id="open-login-from-register">Đăng nhập</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Đăng Nhập -->
+    <div class="modal-overlay hidden" id="login-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="login-modal-title">Đăng Nhập</h3>
+          <button class="close-btn" id="close-login-modal-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" placeholder="Email của bạn" />
+          </div>
+          <div class="form-group">
+            <label for="login-password">Mật khẩu</label>
+            <input type="password" id="login-password" placeholder="Mật khẩu" />
+          </div>
+          <p class="auth-message hidden" id="login-message"></p>
+          <button
+            class="btn btn-primary"
+            id="login-email-btn"
+            style="width: 100%; margin-top: 1rem"
+          >
+            Đăng Nhập bằng Email
+          </button>
+
+          <div class="divider">Hoặc</div>
+
+          <button
+            class="btn btn-facebook"
+            id="login-facebook-btn"
+            style="width: 100%; margin-top: 1rem"
+          >
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.588-1.333h2.412v-3h-3.473c-4.045 0-5.527 1.838-5.527 5.009v2.991z"
+              />
+            </svg>
+            Đăng Nhập bằng Facebook
+          </button>
+          <p style="text-align: center; margin-top: 1rem">
+            <a href="#">Quên mật khẩu?</a>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <p>
+            Chưa có tài khoản?
+            <a href="#" id="open-register-from-login">Đăng ký</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Chat AI -->
+    <div class="modal-overlay hidden" id="chat-modal">
+      <div class="modal chat-modal-content">
+        <div class="modal-header">
+          <h3 id="chat-modal-title">AI Coach - Luyện Tập Ngôn Ngữ</h3>
+          <button class="close-btn" id="close-chat-modal-btn">&times;</button>
+        </div>
+        <div
+          class="modal-body chat-messages-container"
+          id="chat-messages-container"
+        >
+          <!-- Tin nhắn sẽ được chèn bởi JavaScript -->
+          <div class="chat-message bot">
+            <p>
+              Xin chào! Tôi là AI Coach của VocabFlow. Bạn muốn luyện tập về từ
+              vựng hay ngữ pháp nào hôm nay?
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer chat-input-area">
+          <textarea
+            id="chat-input"
+            placeholder="Nhập tin nhắn của bạn..."
+            rows="1"
+            maxlength="500"
+          ></textarea>
+          <button class="btn btn-primary" id="send-chat-btn">
+            <svg
+              class="icon-sm"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Các input file ẩn cho OCR -->
+    <input type="file" id="image-upload" accept="image/*" class="hidden" />
+    <input
+      type="file"
+      id="pdf-upload"
+      accept="application/pdf"
+      class="hidden"
+    />
+
+    <script src="script.js"></script>
+  </body>
+</html>
+<!-- END OF FILE index.html -->
