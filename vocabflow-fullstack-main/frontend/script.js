@@ -277,6 +277,9 @@ async function loadDataFromStorage() {
           } else {
             currentUser.avatar_url = null;
           }
+          // FIX: Load preferred_voice và theme ngay khi khởi động
+          if (meData.preferred_voice) currentUser.preferred_voice = meData.preferred_voice;
+          if (meData.theme) applyTheme(meData.theme);
           window.currentUser = currentUser;
           // Gọi loadAvatar ngay sau khi có avatar_url — không chờ updateAuthUI
           if (typeof window.loadAvatar === 'function') {
@@ -320,8 +323,9 @@ async function handleShareDeck(deckId) {
 // =========================================================
 async function init() {
   setupEventListeners();
-  setupSettings();
+  // FIX: Phải load data trước mới có currentUser, sau đó mới gọi setupSettings
   try { await loadDataFromStorage(); } catch (e) { console.error("❌ Lỗi tải dữ liệu:", e); }
+  if (currentUser) setupSettings();
   updateAuthUI();
   renderDeckList();
   updateActiveDeckLabel();

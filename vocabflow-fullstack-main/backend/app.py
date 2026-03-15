@@ -22,9 +22,12 @@ from pypdf import PdfReader
 from group_api import groups_bp
 
 load_dotenv()
+
 app = Flask(__name__)
 app.register_blueprint(groups_bp)
-CORS(app, resources={r"/api/*": {"origins":["http://localhost:5500", "http://127.0.0.1:5500", "*"]}})
+
+CORS(app)
+
 app.logger.setLevel(logging.INFO)
 
 MONGO_URI = os.getenv("MONGO_URI")
@@ -33,9 +36,10 @@ if not MONGO_URI:
 
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "fallback_secret_key_for_dev")
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "super-secret-jwt-key")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=30) 
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=30)
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 jwt = JWTManager(app)
 
 AUDIO_CACHE_DIR = os.path.join(os.path.dirname(__file__), 'audio_cache')
@@ -1474,9 +1478,19 @@ def get_audio():
             communicate = edge_tts.Communicate(text, voice)
             await communicate.save(filepath)
         try:
-            asyncio.run(generate_and_save())
+            # Dùng new_event_loop thay asyncio.run() để tránh lỗi trên Gunicorn
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                loop.run_until_complete(generate_and_save())
+            finally:
+                loop.close()
+                asyncio.set_event_loop(None)
         except Exception as e:
             app.logger.error(f"TTS Error: {e}")
+            if os.path.exists(filepath):
+                try: os.remove(filepath)
+                except: pass
             return jsonify({"msg": "Error generating audio"}), 500
     return send_file(filepath, mimetype="audio/mpeg")
 
@@ -1898,4 +1912,5 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"Could not connect to MongoDB: {e}")
         exit(1)
-    app.run(debug=True, port=5000)
+
+    app.run(host="0.0.0.0", port=8080)
