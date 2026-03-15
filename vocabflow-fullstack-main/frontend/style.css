@@ -3910,3 +3910,147 @@ body {
   border-color: hsl(214 90% 52% / 0.45);
   transform: translateY(-1px);
 }
+
+/* ==========================================================================
+   MOBILE UX FIXES — Sidebar gọn + FAB AI + Flashcard
+   ========================================================================== */
+
+/* ── Mobile: Ẩn word-list-card mặc định, hiện toggle button ── */
+@media (max-width: 480px) {
+
+  /* Sidebar: xếp dọc, không scroll ngang */
+  .sidebar {
+    flex-direction: column !important;
+    overflow-x: visible !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Deck selector: full width, gọn */
+  .my-decks-card {
+    min-width: unset !important;
+    width: 100% !important;
+    flex-shrink: unset !important;
+  }
+
+  /* Word list card: ẩn mặc định trên mobile, toggle bằng nút */
+  .word-list-card {
+    min-width: unset !important;
+    width: 100% !important;
+    flex-shrink: unset !important;
+  }
+
+  /* Toggle header của word list: hiện trên mobile */
+  .word-list-toggle-header {
+    display: flex !important;
+    padding: 0.5rem 0.75rem !important;
+    background: hsl(var(--muted)/0.4) !important;
+    border-radius: 0.75rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Word list body: ẩn mặc định */
+  .word-list-card.collapsed .word-list-header,
+  .word-list-card.collapsed .word-list {
+    display: none !important;
+  }
+
+  /* FAB chat: nhỏ hơn, góc dưới phải, KHÔNG che nội dung */
+  .fab-chat {
+    width: 48px !important;
+    height: 48px !important;
+    bottom: 4.8rem !important;
+    right: 0.75rem !important;
+    padding: 10px !important;
+    opacity: 0.85 !important;
+    box-shadow: 0 4px 16px hsl(214 90% 52% / 0.35) !important;
+  }
+  /* FAB thu nhỏ khi scroll xuống */
+  .fab-chat.minimized {
+    width: 36px !important;
+    height: 36px !important;
+    opacity: 0.6 !important;
+    padding: 7px !important;
+  }
+
+  /* Flashcard: chiếm full width, đủ cao để đọc */
+  .flashcard-container {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .flip-card {
+    width: 100% !important;
+    min-height: 200px !important;
+    border-radius: 1.25rem !important;
+  }
+  .flash-card {
+    padding: 1.5rem 1rem 1rem !important;
+    border-radius: 1.25rem !important;
+    min-height: 200px !important;
+  }
+  .flash-word {
+    font-size: clamp(1.8rem, 9vw, 2.8rem) !important;
+    line-height: 1.15 !important;
+    word-break: break-word !important;
+  }
+  .flash-ipa {
+    font-size: 0.95rem !important;
+  }
+  .flash-meaning {
+    font-size: 0.88rem !important;
+    line-height: 1.5 !important;
+  }
+  .example-box {
+    font-size: 0.8rem !important;
+  }
+
+  /* Controls: compact */
+  .controls {
+    padding: 0.4rem 0 !important;
+    gap: 0.4rem !important;
+  }
+  .control-buttons {
+    gap: 0.4rem !important;
+  }
+  .control-buttons .btn {
+    padding: 0.4rem 0.7rem !important;
+    font-size: 0.78rem !important;
+    gap: 0.3rem !important;
+  }
+
+  /* Action buttons: rõ hơn */
+  .action-buttons {
+    gap: 0.6rem !important;
+    padding: 0.6rem 0 !important;
+  }
+  #learned-btn, #review-btn {
+    padding: 0.65rem 1.2rem !important;
+    font-size: 0.88rem !important;
+    border-radius: 2rem !important;
+    min-width: 100px !important;
+  }
+
+  /* Navigation controls: to, dễ bấm */
+  .navigation-controls {
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+
+  /* Progress dots: nhỏ gọn */
+  .progress-dots-container {
+    max-height: 40px !important;
+    overflow: hidden !important;
+  }
+
+  /* Main content push lên tránh FAB */
+  .learning-area {
+    padding-bottom: 1rem !important;
+  }
+}
+
+/* ── Nút quay về trong group.html ── */
+#btn-close-tab {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+}

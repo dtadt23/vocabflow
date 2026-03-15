@@ -252,8 +252,8 @@ async function loadDataFromStorage() {
       parsedUser.token = storedToken;
       currentUser = parsedUser;
       window.currentUser = currentUser; // expose ra window cho các script khác
-      const decksResponse = await fetch(`${BACKEND_API_URL}/decks`, {
-        headers: { Authorization: `Bearer ${currentUser.token}` },
+      const decksResponse = await fetch(`${BACKEND_API_URL}/decks?_t=${Date.now()}`, {
+        headers: { Authorization: `Bearer ${currentUser.token}`, 'Cache-Control': 'no-cache' },
       });
       if (decksResponse.ok) {
         const decksData = await decksResponse.json();
@@ -277,9 +277,6 @@ async function loadDataFromStorage() {
           } else {
             currentUser.avatar_url = null;
           }
-          // FIX: Load preferred_voice và theme ngay khi khởi động
-          if (meData.preferred_voice) currentUser.preferred_voice = meData.preferred_voice;
-          if (meData.theme) applyTheme(meData.theme);
           window.currentUser = currentUser;
           // Gọi loadAvatar ngay sau khi có avatar_url — không chờ updateAuthUI
           if (typeof window.loadAvatar === 'function') {
@@ -287,8 +284,8 @@ async function loadDataFromStorage() {
           }
         }
       } catch(e) { /* bỏ qua nếu lỗi mạng */ }
-      const progRes = await fetch(`${BACKEND_API_URL}/progress`, {
-        headers: { Authorization: `Bearer ${currentUser.token}` },
+      const progRes = await fetch(`${BACKEND_API_URL}/progress?_t=${Date.now()}`, {
+        headers: { Authorization: `Bearer ${currentUser.token}`, 'Cache-Control': 'no-cache' },
       });
       if (progRes.ok) {
         const progData = await progRes.json();
@@ -323,9 +320,8 @@ async function handleShareDeck(deckId) {
 // =========================================================
 async function init() {
   setupEventListeners();
-  // FIX: Phải load data trước mới có currentUser, sau đó mới gọi setupSettings
+  setupSettings();
   try { await loadDataFromStorage(); } catch (e) { console.error("❌ Lỗi tải dữ liệu:", e); }
-  if (currentUser) setupSettings();
   updateAuthUI();
   renderDeckList();
   updateActiveDeckLabel();
@@ -3022,3 +3018,31 @@ function showMaintenanceOverlay(data) {
   const params = new URLSearchParams({ msg, eta });
   window.location.href = `/maintenance.html?${params.toString()}`;
 }
+// FAB chat: thu nhỏ khi scroll xuống trên mobile
+(function() {
+  let lastScroll = 0;
+  window.addEventListener('scroll', function() {
+    const fab = document.getElementById('open-chat-btn');
+    if (!fab) return;
+    const curr = window.scrollY;
+    if (window.innerWidth <= 480) {
+      if (curr > lastScroll + 50) {
+        fab.classList.add('minimized');
+      } else if (curr < lastScroll - 20) {
+        fab.classList.remove('minimized');
+      }
+    }
+    lastScroll = curr;
+  }, { passive: true });
+})();
+
+// Word list toggle trên mobile
+window.toggleWordListMobile = function() {
+  const card = document.getElementById('word-list-card');
+  const icon = document.getElementById('word-list-toggle-icon');
+  if (!card) return;
+  card.classList.toggle('collapsed');
+  if (icon) {
+    icon.textContent = card.classList.contains('collapsed') ? '☰ Xem danh sách' : '✕ Thu gọn';
+  }
+};

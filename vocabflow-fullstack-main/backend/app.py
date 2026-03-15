@@ -13,8 +13,7 @@ import requests
 import logging
 import json 
 import re 
-import asyncio
-import edge_tts
+from gtts import gTTS
 import tempfile 
 from io import BytesIO
 from docx import Document
@@ -1474,18 +1473,9 @@ def get_audio():
     filename = f"{voice}_{safe_text}.mp3"
     filepath = os.path.join(AUDIO_CACHE_DIR, filename)
     if not os.path.exists(filepath):
-        async def generate_and_save():
-            communicate = edge_tts.Communicate(text, voice)
-            await communicate.save(filepath)
         try:
-            # Dùng new_event_loop thay asyncio.run() để tránh lỗi trên Gunicorn
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                loop.run_until_complete(generate_and_save())
-            finally:
-                loop.close()
-                asyncio.set_event_loop(None)
+            tts = gTTS(text=text, lang='en', slow=False)
+            tts.save(filepath)
         except Exception as e:
             app.logger.error(f"TTS Error: {e}")
             if os.path.exists(filepath):

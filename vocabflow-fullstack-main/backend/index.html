@@ -52,7 +52,7 @@
             <a href="#" class="nav-link" data-view-target="review"><span class="nav-short">Ôn Tập</span></a>
             <a href="#" class="nav-link" data-view-target="wordlist"><span class="nav-short">Thư Viện</span></a>
             <a href="#" class="nav-link" data-view-target="progress"><span class="nav-short">Xếp hạng</span></a>
-            <a href="./group.html" class="nav-link" id="group-nav-link"><span class="nav-short">Nhóm học</span></a>
+            <a href="./group.html" class="nav-link" id="group-nav-link" target="_blank" rel="noopener"><span class="nav-short">Nhóm học</span></a>
           </nav>
 
           <div class="user-area">
@@ -137,7 +137,7 @@
         </svg>
         Xếp Hạng
       </a>
-      <a href="./group.html" class="mobile-nav-item" id="mnav-group">
+      <a href="./group.html" class="mobile-nav-item" id="mnav-group" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
@@ -202,12 +202,12 @@
                 <div id="deck-panel-group" style="display:none">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
                     <span style="font-size:0.72rem;color:hsl(var(--muted-foreground))">Bộ từ từ nhóm của bạn</span>
-                    <a href="./group.html" style="font-size:0.72rem;font-weight:700;color:hsl(var(--primary));text-decoration:none">Quản lý →</a>
+                    <a href="./group.html" target="_blank" rel="noopener" style="font-size:0.72rem;font-weight:700;color:hsl(var(--primary));text-decoration:none">Quản lý →</a>
                   </div>
                   <div id="group-deck-list" style="display:flex;flex-direction:column;gap:0.3rem;max-height:200px;overflow-y:auto"></div>
                   <div id="group-deck-empty" style="display:none;text-align:center;padding:1rem 0;font-size:0.8rem;color:hsl(var(--muted-foreground))">
                     Chưa có bộ từ nhóm.<br>
-                    <a href="./group.html" style="color:hsl(var(--primary));font-weight:700">Tham gia nhóm →</a>
+                    <a href="./group.html" target="_blank" rel="noopener" style="color:hsl(var(--primary));font-weight:700">Tham gia nhóm →</a>
                   </div>
                 </div>
 
@@ -217,7 +217,11 @@
             <!-- hidden compat -->
             <div id="group-decks-card" style="display:none"></div>
 
-            <div class="word-list-card visible" id="word-list-card">
+            <div class="word-list-card visible" id="word-list-card" data-mobile-collapsible>
+              <div class="word-list-toggle-header" onclick="toggleWordListMobile()" style="display:none;align-items:center;justify-content:space-between;padding:0.5rem 0;cursor:pointer">
+                <span style="font-weight:700;font-size:0.85rem">Danh Sách Từ</span>
+                <span id="word-list-toggle-icon" style="font-size:0.75rem;color:hsl(var(--muted-foreground))">☰ Xem danh sách</span>
+              </div>
               <div class="word-list-header">
                 <h3>Danh Sách Từ</h3>
                 <span class="badge" id="word-list-badge">0 từ</span>
