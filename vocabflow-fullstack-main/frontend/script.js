@@ -2,7 +2,12 @@
    VocabFlow — script.js  |  Session-based AI Chat + Full App Logic
    ========================================================================== */
 
-const BACKEND_API_URL = "http://127.0.0.1:5000/api";
+const BACKEND_API_URL =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "http://127.0.0.1:5000/api"
+    : "https://backend-late-bird-6083.fly.dev/api";
+
 window.BACKEND_API_URL = BACKEND_API_URL;
 
 // Kiểm tra bảo trì khi load trang (trước khi login)
