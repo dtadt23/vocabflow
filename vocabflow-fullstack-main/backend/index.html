@@ -1,0 +1,2028 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VocabFlow - Học Từ Vựng Thông Minh</title>
+    
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.bunny.net/css2?family=nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="./style.css" />
+  <script>try{if(localStorage.getItem("vf_theme")==="dark")document.documentElement.classList.add("dark");}catch{}</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="prefetch" href="./group.html" as="document">
+  <style>
+    @keyframes vt-fade-out {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-8px); }
+    }
+    @keyframes vt-fade-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    ::view-transition-old(root) {
+      animation: vt-fade-out 0.18s ease-in forwards;
+    }
+    ::view-transition-new(root) {
+      animation: vt-fade-in 0.22s ease-out forwards;
+    }
+  </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="container">
+        <div class="header-content">
+          <a href="#" class="logo-section" style="text-decoration: none; cursor: pointer"
+            onclick="event.preventDefault(); if(typeof switchView === 'function') switchView('dashboard');">
+            <div class="logo-icon">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+              </svg>
+            </div>
+            <div class="logo-text">
+              <h1 style="color: var(--foreground)">VocabFlow</h1>
+              <p>SMART VOCAB</p>
+            </div>
+          </a>
+
+          <nav class="navigation">
+            <a href="#" class="nav-link active" data-view-target="dashboard"><span class="nav-short">Bài học</span></a>
+            <a href="#" class="nav-link" data-view-target="review"><span class="nav-short">Ôn Tập</span></a>
+            <a href="#" class="nav-link" data-view-target="wordlist"><span class="nav-short">Thư Viện</span></a>
+            <a href="#" class="nav-link" data-view-target="progress"><span class="nav-short">Xếp hạng</span></a>
+            <a href="./group.html" class="nav-link" id="group-nav-link"><span class="nav-short">Nhóm học</span></a>
+          </nav>
+
+          <div class="user-area">
+            <button class="btn btn-ghost" data-view-target="settings">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
+              </svg>
+              Cài Đặt
+            </button>
+
+            <!-- Notification Bell (hiện khi đã đăng nhập) -->
+            <div class="notif-bell-wrap hidden" id="notif-bell-wrap">
+              <button class="notif-bell-btn" id="notif-bell-btn" title="Thông báo" onclick="toggleNotifPanel()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <span class="notif-badge hidden" id="notif-badge">0</span>
+              </button>
+              <!-- Panel thông báo -->
+              <div class="notif-panel" id="notif-panel" style="display:none">
+                <div class="notif-panel-header">
+                  <span>🔔 Thông báo</span>
+                  <button class="notif-mark-all-btn" onclick="markAllNotifsRead()" title="Đánh dấu tất cả đã đọc">✓ Đọc tất cả</button>
+                </div>
+                <div class="notif-list" id="notif-list">
+                  <div class="notif-empty">Không có thông báo mới</div>
+                </div>
+                <div class="notif-panel-footer">
+                  <button onclick="clearAllNotifs()" class="notif-clear-btn">Xóa tất cả</button>
+                </div>
+              </div>
+            </div>
+            <div class="header-avatar hidden" id="header-avatar-btn"
+              onclick="(function(){ var lb=document.getElementById('avatar-lightbox'); var img=document.getElementById('avatar-lb-img'); var src=document.getElementById('header-avatar-img').src; if(src && document.getElementById('header-avatar-img').style.display!=='none'){ img.src=src; lb.style.display='flex'; } })()"
+              title="Xem ảnh đại diện">
+              <img id="header-avatar-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%">
+              <span id="header-avatar-initials">?</span>
+            </div>
+
+            <!-- Nút đăng nhập (hiện khi chưa đăng nhập) -->
+            <button class="btn btn-outline" id="open-login-modal-btn">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Đăng Nhập
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <!-- Mobile Bottom Nav (chỉ hiện ≤ 480px) -->
+    <nav class="mobile-nav-bar" id="mobile-nav-bar" style="display:none">
+      <a href="#" class="mobile-nav-item active" data-view-target="dashboard" id="mnav-dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+        Bài học
+      </a>
+      <a href="#" class="mobile-nav-item" data-view-target="review" id="mnav-review">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Ôn Tập
+      </a>
+      <a href="#" class="mobile-nav-item" data-view-target="wordlist" id="mnav-wordlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        Thư Viện
+      </a>
+      <a href="#" class="mobile-nav-item" data-view-target="progress" id="mnav-progress">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        Xếp Hạng
+      </a>
+      <a href="./group.html" class="mobile-nav-item" id="mnav-group">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Nhóm học
+      </a>
+      <button class="mobile-nav-item" data-view-target="settings" id="mnav-settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        </svg>
+        Cài Đặt
+      </button>
+    </nav>
+
+    <main class="main">
+      <div class="container">
+        <!-- 1. Dashboard View -->
+        <div class="main-grid" id="dashboard-view">
+          <div class="sidebar">
+
+            <!-- ── Deck Selector Card ── -->
+            <div class="my-decks-card" style="padding:0.9rem">
+
+              <!-- Active deck display + toggle -->
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;cursor:pointer" onclick="toggleDeckPanel()">
+                <div style="display:flex;align-items:center;gap:0.5rem;min-width:0">
+                  <span id="active-deck-icon" style="font-size:1rem;flex-shrink:0">📖</span>
+                  <span id="active-deck-label" style="font-size:0.85rem;font-weight:700;color:hsl(var(--foreground));white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Chọn bộ từ...</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0">
+                  <button class="btn btn-outline btn-sm" id="create-deck-btn" onclick="event.stopPropagation();handleOpenDeckModal()" style="padding:4px 10px;font-size:0.75rem">＋ Tạo</button>
+                  <span id="deck-panel-chevron" style="font-size:0.8rem;color:hsl(var(--muted-foreground));transition:transform .2s">▼</span>
+                </div>
+              </div>
+
+              <!-- Dropdown panel -->
+              <div id="deck-dropdown-panel" style="display:none;margin-top:0.75rem;border-top:1px solid hsl(var(--border)/0.5);padding-top:0.75rem">
+
+                <!-- Tab bar -->
+                <div style="display:flex;gap:0.3rem;background:hsl(var(--muted)/0.5);border-radius:8px;padding:3px;margin-bottom:0.6rem">
+                  <button id="tab-btn-mine" onclick="switchDeckTab('mine')"
+                    style="flex:1;padding:4px 0;font-size:0.75rem;font-weight:700;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:hsl(var(--primary));color:#fff">
+                    Của tôi
+                  </button>
+                  <button id="tab-btn-group" onclick="switchDeckTab('group')"
+                    style="flex:1;padding:4px 0;font-size:0.75rem;font-weight:700;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:hsl(var(--muted-foreground))">
+                    🏫 Nhóm
+                  </button>
+                </div>
+
+                <!-- Tab: Của tôi -->
+                <div id="deck-panel-mine">
+                  <input type="text" id="search-deck-input" placeholder="Tìm bộ từ..."
+                    style="width:100%;padding:6px 10px;font-size:0.8rem;border-radius:8px;border:1px solid hsl(var(--border)/0.6);background:hsl(var(--card)/0.7);box-sizing:border-box;margin-bottom:0.5rem;outline:none">
+                  <div class="deck-list" id="deck-list" style="max-height:200px"></div>
+                </div>
+
+                <!-- Tab: Nhóm -->
+                <div id="deck-panel-group" style="display:none">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+                    <span style="font-size:0.72rem;color:hsl(var(--muted-foreground))">Bộ từ từ nhóm của bạn</span>
+                    <a href="./group.html" style="font-size:0.72rem;font-weight:700;color:hsl(var(--primary));text-decoration:none">Quản lý →</a>
+                  </div>
+                  <div id="group-deck-list" style="display:flex;flex-direction:column;gap:0.3rem;max-height:200px;overflow-y:auto"></div>
+                  <div id="group-deck-empty" style="display:none;text-align:center;padding:1rem 0;font-size:0.8rem;color:hsl(var(--muted-foreground))">
+                    Chưa có bộ từ nhóm.<br>
+                    <a href="./group.html" style="color:hsl(var(--primary));font-weight:700">Tham gia nhóm →</a>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- hidden compat -->
+            <div id="group-decks-card" style="display:none"></div>
+
+            <div class="word-list-card visible" id="word-list-card">
+              <div class="word-list-header">
+                <h3>Danh Sách Từ</h3>
+                <span class="badge" id="word-list-badge">0 từ</span>
+              </div>
+              <div class="word-list" id="word-list"></div>
+            </div>
+          </div>
+
+          <div class="learning-area">
+            <div class="placeholder" id="placeholder">
+              <h2>Chào mừng đến với VocabFlow!</h2>
+              <p>Chọn một bộ từ để bắt đầu học, hoặc tạo một bộ từ mới.</p>
+            </div>
+
+            <div class="learning-content" id="learning-content">
+              <div class="controls">
+                <div class="control-buttons">
+                  <button class="btn btn-outline" id="shuffle-btn">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/>
+                      <path d="M15 15l6 6"/><path d="M4 4l5 5"/>
+                    </svg>
+                    Xáo Trộn
+                  </button>
+                  <button class="btn btn-outline" id="reset-btn">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                      <path d="M21 3v5h-5"/>
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                      <path d="M8 16H3v5"/>
+                    </svg>
+                    Đặt Lại
+                  </button>
+                </div>
+                <div class="word-indicator">
+                  Từ <span id="current-indicator">0</span> trên <span id="total-indicator">0</span>
+                </div>
+              </div>
+
+              <div class="flashcard-container">
+                <div class="flip-card" id="flashcard">
+                  <div class="flip-card-inner">
+                    <div class="flip-card-front learning-card">
+                      <div class="card-content">
+                        <div class="word-section">
+                          <h2 class="word-text" id="word-text" lang="en" translate="no"></h2>
+                          <p class="word-ipa" id="word-ipa" lang="en" translate="no"></p>
+                          <p class="card-hint">Nhấp để xem nghĩa</p>
+                        </div>
+                        <button class="btn btn-ghost pronunciation-btn" id="pronunciation-btn" type="button"
+                          onmousedown="event.preventDefault(); event.stopPropagation(); return false;">
+                          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 5 6 9H2v6h4l5 4V5z"/>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                          </svg>
+                          Phát Âm
+                        </button>
+                      </div>
+                    </div>
+                    <div class="flip-card-back learning-card">
+                      <div class="card-content">
+                        <div class="meaning-section">
+                          <h3 class="meaning-text" id="meaning-text" lang="vi" translate="no"></h3>
+                          <div class="example-box" id="example-box"></div>
+                        </div>
+                        <p class="card-hint">Nhấp để lật lại</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="action-buttons" id="action-buttons">
+                  <button class="btn btn-review" id="review-btn" type="button">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                    </svg>
+                    Cần Xem Lại
+                  </button>
+                  <button class="btn btn-ghost" id="flip-back-btn">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                      <path d="M21 3v5h-5"/>
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                      <path d="M8 16H3v5"/>
+                    </svg>
+                    Lật
+                  </button>
+                  <button class="btn btn-learned" id="learned-btn" type="button">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 6 9 17l-5-5"/>
+                    </svg>
+                    Đã Học
+                  </button>
+                </div>
+              </div>
+
+              <div class="navigation-controls">
+                <button class="btn btn-outline btn-lg" id="prev-btn" type="button">
+                  <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m15 18-6-6 6-6"/>
+                  </svg>
+                  Trước
+                </button>
+                <div class="progress-dots" id="progress-dots"></div>
+                <button class="btn btn-outline btn-lg" id="next-btn" type="button">
+                  Tiếp
+                  <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m9 18 6-6-6-6"/>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- PROGRESS CARD — Cleaned up -->
+              <div class="progress-card visible horizontal-progress" id="progress-card">
+                <div class="progress-header">
+                  <div class="progress-title">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>
+                    </svg>
+                    <h3>Tiến Độ Học Tập</h3>
+                  </div>
+                  <!-- progress-count hidden via CSS -->
+                  <div class="progress-count">
+                    <span id="current-word">0</span> / <span id="total-words">0</span> từ
+                  </div>
+                  <!-- streak-xp-display hidden via CSS -->
+                  <div class="streak-xp-display">
+                    <span id="dashboard-streak">0 Ngày 🔥</span>
+                    <span id="dashboard-xp">0 XP ⚡</span>
+                  </div>
+                </div>
+
+                <div class="progress-horizontal-grid">
+                  <div class="progress-item" id="daily-goal-container">
+                    <div class="progress-label">
+                      <span>🎯 Mục tiêu: <span id="daily-goal-text">0/0 từ</span></span>
+                    </div>
+                    <div class="progress-bar" style="height:10px">
+                      <div class="progress-fill" id="daily-goal-progress"
+                        style="background:linear-gradient(90deg,hsl(214 90% 52%),hsl(200 90% 55%));width:0%"></div>
+                    </div>
+                    <p id="daily-goal-message" class="text-secondary" style="font-size:0.7rem;margin-top:5px">
+                      Hãy học thêm để đạt mục tiêu!
+                    </p>
+                  </div>
+
+                  <div class="progress-item">
+                    <div class="progress-label">
+                      <span>📚 Phiên học: <span id="session-percentage">0%</span></span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-fill gradient-primary" id="session-progress"></div>
+                    </div>
+                  </div>
+
+                  <div class="progress-item">
+                    <div class="progress-label">
+                      <span>✅ Đã thuộc: <span id="learned-percentage">0%</span></span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-fill gradient-success" id="learned-progress"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- stats hidden via CSS but kept for JS -->
+                <div class="progress-stats">
+                  <div class="stat-item">
+                    <div class="stat-value">
+                      <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                      </svg>
+                      <span id="reviewed-count">0</span>
+                    </div>
+                    <p>Đã Xem</p>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-value stat-success">
+                      <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22,7 13.5,15.5 8.5,10.5 2,17"/>
+                        <polyline points="16,7 22,7 22,13"/>
+                      </svg>
+                      <span id="learned-count">0</span>
+                    </div>
+                    <p>Đã Học</p>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-value stat-warning">
+                      <span id="remaining-count">0</span>
+                    </div>
+                    <p>Cần Học</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="completion-message" id="completion-message">
+                <h2>Chúc mừng! 🎉</h2>
+                <p>Bạn đã hoàn thành bộ từ này!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ÔN TẬP TỪ VỰNG -->
+        <div class="page-view hidden" id="review-view">
+          <h2 class="page-title">Ôn Tập Kiến Thức</h2>
+          <p class="page-subtitle">Kiểm tra lại trí nhớ của bạn qua các bài tập trắc nghiệm và điền từ.</p>
+          <div class="data-card review-setup-card" id="review-setup">
+            <div class="setup-content">
+              <h3>Chọn Cấu Hình Ôn Tập</h3>
+              <div class="row" style="margin-bottom:1.5rem">
+                <div class="form-group col">
+                  <label>Chọn Bộ Từ:</label>
+                  <select class="select-input" id="review-deck-select">
+                    <option value="all">Tất cả các bộ từ</option>
+                  </select>
+                </div>
+                <div class="form-group col">
+                  <label>Số lượng câu hỏi:</label>
+                  <select class="select-input" id="review-count-select">
+                    <option value="10">10 câu</option>
+                    <option value="20">20 câu</option>
+                    <option value="50">50 câu</option>
+                    <option value="all">Tất cả</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mode-selection-grid">
+                <div class="mode-card" id="mode-quiz">
+                  <div class="mode-icon">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="9 11 12 14 22 4"/>
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                  </div>
+                  <h4>Trắc Nghiệm</h4>
+                  <p>Chọn đáp án đúng từ 4 lựa chọn.</p>
+                  <button class="btn btn-primary btn-full" id="start-quiz-btn">Bắt Đầu</button>
+                </div>
+                <div class="mode-card" id="mode-fill">
+                  <div class="mode-icon">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="4 7 4 4 20 4 20 7"/>
+                      <line x1="9" y1="20" x2="15" y2="20"/>
+                      <line x1="12" y1="4" x2="12" y2="20"/>
+                    </svg>
+                  </div>
+                  <h4>Điền Từ</h4>
+                  <p>Gõ lại từ vựng dựa trên nghĩa gợi ý.</p>
+                  <button class="btn btn-primary btn-full" id="start-fill-btn">Bắt Đầu</button>
+                </div>
+                <!-- SRS MODE CARD -->
+                <div class="mode-card mode-card-srs" id="mode-srs">
+                  <div class="mode-icon mode-icon-srs">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/><polyline points="21 3 21 9 15 9"/>
+                    </svg>
+                  </div>
+                  <h4>Ôn Lặp Lại Ngắt Quãng</h4>
+                  <p>Hệ thống nhắc ôn đúng lúc — không bao giờ quên từ đã học.</p>
+                  <div class="srs-stats-preview">
+                    <span id="srs-due-count-badge">0 từ đến hạn</span>
+                    <span id="srs-today-count-badge">0 từ hôm nay</span>
+                  </div>
+                  <div style="display:flex;gap:8px;margin-top:auto">
+                    <button class="btn btn-primary" style="flex:1" id="start-srs-due-btn">Ôn Đến Hạn</button>
+                    <button class="btn btn-outline" style="flex:1" id="start-srs-today-btn">Từ Hôm Nay</button>
+                  </div>
+                </div>
+
+                <!-- PRONUNCIATION MODE CARD -->
+                <div class="mode-card mode-card-pronun" id="mode-pronun">
+                  <div class="mode-icon mode-icon-pronun">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                      <line x1="12" y1="19" x2="12" y2="23"/>
+                      <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                  </div>
+                  <h4>Luyện Phát Âm AI</h4>
+                  <p>Nghe phát âm chuẩn → Đọc to → AI chấm điểm & sửa lỗi chi tiết.</p>
+                  <button class="btn btn-primary btn-full" id="start-pronun-btn">Bắt Đầu</button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- PRONUNCIATION GAME OVERLAY -->
+          <div class="pronun-overlay hidden" id="pronun-overlay">
+            <div class="pronun-game-modal">
+
+              <!-- Header -->
+              <div class="pronun-game-header">
+                <div class="pronun-header-info">
+                  <span class="pronun-mode-label">🎙️ Luyện Phát Âm AI</span>
+                  <div class="pronun-progress-row">
+                    <span id="pronun-current-num">1</span>
+                    <span style="opacity:.4">/</span>
+                    <span id="pronun-total-num">10</span>
+                    <div class="pronun-progress-track">
+                      <div class="pronun-progress-fill" id="pronun-progress-fill"></div>
+                    </div>
+                  </div>
+                </div>
+                <button class="pronun-game-close" id="pronun-game-close">✕</button>
+              </div>
+
+              <!-- Card chính -->
+              <div class="pronun-game-card">
+
+                <!-- Từ cần phát âm -->
+                <div class="pronun-word-section">
+                  <p class="pronun-word-meaning" id="pg-meaning"></p>
+                  <h1 class="pronun-word" id="pg-word"></h1>
+                  <p class="pronun-ipa" id="pg-ipa"></p>
+                </div>
+
+                <!-- Nghe phát âm chuẩn -->
+                <button class="pronun-listen-btn" id="pg-listen-btn">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                  Nghe phát âm chuẩn
+                </button>
+
+                <!-- Khu vực ghi âm -->
+                <div class="pronun-mic-area">
+
+                  <!-- Idle state -->
+                  <div class="pg-state" id="pg-state-idle">
+                    <button class="pg-mic-btn" id="pg-mic-start">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    </button>
+                    <p class="pg-state-label">Nhấn để ghi âm</p>
+                  </div>
+
+                  <!-- Recording state -->
+                  <div class="pg-state hidden" id="pg-state-recording">
+                    <div class="pg-wave-ring">
+                      <div class="pg-wave-bars">
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                      </div>
+                    </div>
+                    <p class="pg-state-label recording">Đang ghi âm — đọc to từ trên</p>
+                    <button class="pg-stop-btn" id="pg-mic-stop">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                      Dừng & Phân tích
+                    </button>
+                  </div>
+
+                  <!-- Analyzing state -->
+                  <div class="pg-state hidden" id="pg-state-analyzing">
+                    <div class="pg-spinner"></div>
+                    <p class="pg-state-label">AI đang phân tích phát âm...</p>
+                  </div>
+
+                  <!-- Result state -->
+                  <div class="pg-state hidden" id="pg-state-result">
+                    <div class="pg-result-card">
+                      <div class="pg-score-row">
+                        <div class="pg-score-ring" id="pg-score-ring">
+                          <svg viewBox="0 0 64 64" class="pg-score-svg">
+                            <circle class="pg-score-bg" cx="32" cy="32" r="26"/>
+                            <circle class="pg-score-arc" cx="32" cy="32" r="26" id="pg-score-arc"/>
+                          </svg>
+                          <span class="pg-score-num" id="pg-score-num">0</span>
+                        </div>
+                        <div class="pg-verdict-col">
+                          <div class="pg-verdict" id="pg-verdict"></div>
+                          <div class="pg-verdict-sub" id="pg-verdict-sub"></div>
+                        </div>
+                      </div>
+                      <div class="pg-feedback-list" id="pg-feedback-list"></div>
+                    </div>
+                    <div class="pg-result-actions">
+                      <button class="pg-retry-btn" id="pg-retry-btn">🎙️ Thử lại</button>
+                      <button class="pg-next-btn" id="pg-next-btn">Từ tiếp →</button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Lịch sử điểm phiên này -->
+              <div class="pronun-session-scores" id="pronun-session-scores"></div>
+
+            </div>
+          </div>
+
+          <div class="review-game-container hidden" id="review-game-container">
+            <div class="game-header-bar">
+              <div class="game-stats">
+                <span class="stat-badge">Câu: <b id="game-current-q">1</b>/<span id="game-total-q">50</span></span>
+                <span class="stat-badge success">Đúng: <b id="game-score">0</b></span>
+              </div>
+              <div id="game-timer-container" style="display:flex;align-items:center;gap:8px;font-weight:700;color:#ef4444">
+                <i class="fa-solid fa-clock"></i>
+                <span id="review-timer-val">15</span>s
+              </div>
+              <button class="btn btn-ghost btn-sm" id="exit-review-btn">
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                </svg>
+                Thoát
+              </button>
+            </div>
+            <div class="game-card">
+              <div class="question-section">
+                <span class="question-label">Định nghĩa / Nghĩa của từ:</span>
+                <h2 class="question-text" id="question-text"></h2>
+                <p class="question-hint hidden" id="question-hint"></p>
+              </div>
+              <div class="quiz-area hidden" id="quiz-area">
+                <div class="options-grid" id="quiz-options-container"></div>
+              </div>
+              <div class="fill-area hidden" id="fill-area">
+                <div class="fill-input-wrapper">
+                  <input type="text" class="fill-input" id="fill-input" placeholder="Nhập từ vựng tiếng Anh..." autocomplete="off"/>
+                  <button class="btn btn-primary" id="submit-fill-btn">Kiểm Tra</button>
+                </div>
+                <div class="virtual-keyboard-hint">Gợi ý: Nhấn Enter để kiểm tra</div>
+              </div>
+              <div class="feedback-section hidden" id="feedback-section">
+                <div class="feedback-message" id="feedback-message"></div>
+                <div class="feedback-detail" id="feedback-detail"></div>
+                <button class="btn btn-outline" id="next-question-btn">Câu Tiếp Theo</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="review-result-card hidden" id="review-result-card">
+            <div class="result-content">
+              <div class="result-icon-wrapper"></div>
+              <h2>Hoàn Thành Ôn Tập!</h2>
+              <p>Bạn đã hoàn thành phiên ôn tập này.</p>
+              <div class="result-stats-grid">
+                <div class="result-stat">
+                  <span class="stat-value" id="final-score">0/0</span>
+                  <span class="stat-label">Câu đúng</span>
+                </div>
+                <div class="result-stat">
+                  <span class="stat-value" id="final-percent">0%</span>
+                  <span class="stat-label">Tỷ lệ</span>
+                </div>
+              </div>
+              <div class="result-actions">
+                <button class="btn btn-primary" id="review-again-btn">Ôn Tập Tiếp</button>
+                <button class="btn btn-outline" id="back-to-dashboard-btn">Về Dashboard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Thư Viện Cộng Đồng -->
+        <div class="page-view hidden" id="wordlist-view">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;border-bottom:2px solid rgba(0,0,0,0.05);padding-bottom:1rem">
+            <div>
+              <h2 class="page-title" style="margin-bottom:5px">Thư Viện Cộng Đồng</h2>
+              <p class="page-subtitle" style="margin-bottom:0">Khám phá và chia sẻ tri thức cùng mọi người.</p>
+            </div>
+            <div class="library-tabs" style="display:flex;gap:10px;background:rgba(0,0,0,0.03);padding:5px;border-radius:12px">
+              <button class="btn btn-sm btn-primary" id="lib-tab-explore" onclick="switchLibTab('explore')">Khám Phá</button>
+              <button class="btn btn-sm btn-ghost" id="lib-tab-mine" onclick="switchLibTab('mine')">Đóng Góp Của Tôi</button>
+            </div>
+          </div>
+          <div id="lib-content-explore">
+            <div class="view-controls" style="margin-bottom:20px">
+              <input type="text" placeholder="Tìm kiếm bộ từ công khai..." class="search-input" id="library-search" style="width:100%"/>
+            </div>
+            <div id="library-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px"></div>
+          </div>
+          <div id="lib-content-mine" class="hidden">
+            <div class="data-card" style="margin-bottom:2rem;background:linear-gradient(135deg,hsl(214 90% 52%),hsl(225 85% 60%));color:white">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <h3 style="color:white;margin-bottom:5px">Chia sẻ bộ từ của bạn</h3>
+                  <p style="font-size:0.85rem;opacity:0.9">Gửi bộ từ tâm đắc nhất của bạn để giúp đỡ cộng đồng.</p>
+                </div>
+                <button class="btn btn-outline" style="background:white;border:none;color:hsl(214 90% 52%)" onclick="openSubmitDeckModal()">Tải Lên Bộ Từ</button>
+              </div>
+            </div>
+            <div class="card table-card">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Tên Bộ Từ</th><th>Ngày Gửi</th><th>Trạng Thái</th><th style="text-align:right">Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="my-submissions-table">
+                  <tr><td colspan="4" style="text-align:center;padding:2rem;color:#94a3b8">Bạn chưa chia sẻ bộ từ nào.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Tiến Độ View -->
+        <div class="page-view hidden" id="progress-view">
+          <h2 class="page-title">Tiến Độ Học Tập Chi Tiết</h2>
+          <p class="page-subtitle">Theo dõi thành tích và xu hướng học từ vựng của bạn.</p>
+          <div class="progress-grid">
+            <div class="data-card large-card progress-summary">
+              <h3>Tổng Quan Thành Tích</h3>
+              <div class="summary-stats">
+                <div class="stat-item-lg">
+                  <div class="stat-value stat-success" id="total-learned-count">0</div>
+                  <p>Tổng Từ Đã Nắm Vững</p>
+                </div>
+                <div class="stat-item-lg">
+                  <div class="stat-value" id="current-streak-val">0 Ngày</div>
+                  <p>Chuỗi Học Tập Hiện Tại</p>
+                </div>
+                <div class="stat-item-lg">
+                  <div class="stat-value stat-primary" id="average-weekly-words">0</div>
+                  <p>Từ Học Trung Bình / Tuần</p>
+                </div>
+                <div class="stat-item-lg">
+                  <div class="stat-value stat-warning" id="total-xp-val">0 XP</div>
+                  <p>Tổng Kinh Nghiệm</p>
+                </div>
+              </div>
+            </div>
+            <div class="data-card chart-card">
+              <h3>Phân Bổ Độ Khó</h3>
+              <div style="height:250px"><canvas id="difficultyDistributionChart"></canvas></div>
+            </div>
+            <div class="data-card chart-card">
+              <h3>Từ Học Được Theo Ngày (7 Ngày)</h3>
+              <div style="height:250px"><canvas id="dailyLearnedWordsChart"></canvas></div>
+            </div>
+            <div class="data-card full-width">
+              <h3>Hoạt Động Gần Đây</h3>
+              <ul class="activity-list" id="activity-list"></ul>
+            </div>
+            <div class="data-card full-width" style="margin-top:1.5rem">
+              <div class="leaderboard-header-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+                <h3 style="margin:0;color:hsl(214 90% 52%)">🏆 Bảng Xếp Hạng Học Viên</h3>
+                <span class="badge">Top 10 Hệ Thống</span>
+              </div>
+              <!-- Table: desktop -->
+              <div class="leaderboard-table-wrap table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width:80px">Hạng</th>
+                      <th>Người dùng</th>
+                      <th class="leaderboard-streak-col" style="text-align:center">Chuỗi (Streak)</th>
+                      <th style="text-align:right">Kinh nghiệm (XP)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leaderboard-body">
+                    <tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--muted-foreground)">Đang tải bảng xếp hạng...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- Cards: mobile only (populated by JS) -->
+              <div class="leaderboard-cards" style="display:none" id="leaderboard-cards"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Cài Đặt View -->
+        <div class="page-view hidden" id="settings-view">
+          <h2 class="page-title">Cài Đặt Tài Khoản & Ứng Dụng</h2>
+          <p class="page-subtitle">Quản lý thông tin cá nhân và giao diện.</p>
+
+          <!-- Avatar Upload Card -->
+          <div class="data-card" style="margin-bottom:1.5rem;text-align:center;padding:2rem">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:0.75rem">
+              <div id="settings-avatar-circle"
+                style="width:96px;height:96px;border-radius:50%;cursor:pointer;position:relative;overflow:hidden;border:3px solid hsl(0 0% 100% / 0.9);box-shadow:0 4px 24px hsl(214 90% 52% / 0.25),0 0 0 4px hsl(214 90% 52% / 0.12);transition:transform 0.2s,box-shadow 0.2s;display:flex;align-items:center;justify-content:center"
+                onmouseenter="document.getElementById('settings-avatar-overlay').style.opacity='1';this.style.transform='scale(1.04)'"
+                onmouseleave="document.getElementById('settings-avatar-overlay').style.opacity='0';this.style.transform='scale(1)'"
+                onclick="document.getElementById('avatar-file-input').click()" title="Nhấn để đổi ảnh">
+                <img id="settings-avatar-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%">
+                <span id="settings-avatar-initials" style="font-size:2rem;font-weight:800;color:white">?</span>
+                <div id="settings-avatar-overlay" style="position:absolute;inset:0;background:hsl(0 0% 0% / 0.4);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;opacity:0;transition:opacity 0.2s;color:white;font-size:0.72rem;font-weight:700">
+                  <i class="fa-solid fa-camera" style="font-size:1.2rem"></i>
+                  <span>Đổi ảnh</span>
+                </div>
+              </div>
+              <input type="file" id="avatar-file-input" accept="image/*" style="display:none">
+              <p id="settings-username-display" style="font-size:1.05rem;font-weight:700;margin:0;color:hsl(var(--foreground))">Học viên</p>
+              <p style="font-size:0.78rem;color:hsl(var(--muted-foreground));margin:0">Nhấn vào ảnh để thay đổi ảnh đại diện</p>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <div class="data-card settings-section">
+              <h3>Thông Tin Tài Khoản</h3>
+              <div class="form-group">
+                <label>Email / Tên người dùng</label>
+                <input type="email" id="setting-email" disabled style="background-color:var(--muted)"/>
+              </div>
+              <div class="form-group">
+                <label>Mật Khẩu Mới (Bỏ trống nếu không đổi)</label>
+                <input type="password" id="setting-new-password" placeholder="Nhập mật khẩu mới..."/>
+              </div>
+              <div class="form-group">
+                <label>Xác Nhận Mật Khẩu</label>
+                <input type="password" id="setting-confirm-password" placeholder="Nhập lại mật khẩu mới..."/>
+              </div>
+              <button class="btn btn-danger" id="logout-settings-btn" style="margin-top:1rem;width:100%">
+                Đăng Xuất
+              </button>
+            </div>
+
+            <div class="data-card settings-section">
+              <h3>Cấu Hình Học Tập & Giao Diện</h3>
+              <div class="form-group">
+                <label for="setting-daily-goal">Mục Tiêu Hàng Ngày (Số từ)</label>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <input type="number" id="setting-daily-goal" min="1" max="100" value="5" style="width:80px"/>
+                  <span class="text-secondary">từ / ngày</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="setting-theme">Giao Diện</label>
+                <select id="setting-theme" class="select-input">
+                  <option value="light">Sáng (Light Mode)</option>
+                  <option value="dark">Tối (Dark Mode)</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-top:1rem;padding-top:1rem;border-top:1px dashed rgba(0,0,0,0.1)">
+                <label for="setting-voice">Giáo Viên Hướng Dẫn (Giọng AI)</label>
+                <div style="display:flex;gap:10px;align-items:center">
+                  <select id="setting-voice" class="select-input" style="flex:1">
+                    <option value="default">Đang tải danh sách giọng...</option>
+                  </select>
+                  <button class="btn btn-outline btn-sm" id="test-user-voice-btn" type="button" title="Nghe thử giọng này">
+                    <i class="fa-solid fa-volume-high"></i>
+                  </button>
+                </div>
+                <p class="text-secondary" style="font-size:0.75rem;margin-top:5px">Sử dụng công nghệ Neural TTS chất lượng cao.</p>
+              </div>
+              <div class="setting-actions" style="margin-top:20px">
+                <button class="btn btn-primary" id="save-settings-btn" style="width:100%">Lưu Thay Đổi</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <button class="fab-chat" id="open-chat-btn" title="Chat với AI">
+        <svg width="30" height="30" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="18" width="40" height="28" rx="9" fill="white" fill-opacity="0.25"/>
+          <rect x="10" y="18" width="40" height="28" rx="9" stroke="white" stroke-width="2.5"/>
+          <circle cx="22" cy="30" r="5" fill="white"/>
+          <circle cx="23" cy="29" r="2" fill="#1d6eea"/>
+          <circle cx="38" cy="30" r="5" fill="white"/>
+          <circle cx="39" cy="29" r="2" fill="#1d6eea"/>
+          <path d="M23 37 Q30 42 37 37" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <line x1="30" y1="18" x2="30" y2="10" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="30" cy="7.5" r="3.5" fill="white"/>
+          <rect x="4" y="26" width="6" height="10" rx="3" fill="white" fill-opacity="0.65"/>
+          <rect x="50" y="26" width="6" height="10" rx="3" fill="white" fill-opacity="0.65"/>
+        </svg>
+      </button>
+
+      <!-- ====== SRS GAME CONTAINER ====== -->
+      <div class="srs-overlay hidden" id="srs-overlay">
+        <div class="srs-game-modal">
+          <!-- SRS Header -->
+          <div class="srs-header">
+            <div class="srs-header-info">
+              <span class="srs-label" id="srs-mode-label">Ôn Lặp Lại Ngắt Quãng</span>
+              <div class="srs-progress-row">
+                <span id="srs-current-num">1</span><span style="opacity:.5">/</span><span id="srs-total-num">10</span>
+                <div class="srs-progress-bar-wrap"><div class="srs-progress-bar-fill" id="srs-progress-fill"></div></div>
+              </div>
+            </div>
+            <button class="srs-close-btn" id="srs-close-btn" title="Thoát">✕</button>
+          </div>
+
+          <!-- SRS Card Area -->
+          <div class="srs-card-area" id="srs-card-area">
+            <div class="srs-card" id="srs-card">
+              <div class="srs-card-front" id="srs-card-front">
+                <p class="srs-card-label">Nghĩa của từ</p>
+                <h2 class="srs-meaning" id="srs-meaning-display"></h2>
+                <p class="srs-example-hint" id="srs-example-hint"></p>
+                <button class="srs-flip-btn" id="srs-show-btn">
+                  <i class="fa-solid fa-eye"></i> Xem từ
+                </button>
+              </div>
+              <div class="srs-card-back hidden" id="srs-card-back">
+                <p class="srs-card-label" style="color:hsl(0 0% 100%/0.6)">Từ vựng</p>
+                <h2 class="srs-word-display" id="srs-word-display"></h2>
+                <p class="srs-ipa-display" id="srs-ipa-display"></p>
+                <p class="srs-example-en" id="srs-example-back"></p>
+                <div class="srs-rating-row">
+                  <button class="srs-rating-btn srs-again" id="srs-btn-again">
+                    <span class="srs-rating-icon">😰</span>
+                    <span class="srs-rating-label">Quên rồi</span>
+                    <span class="srs-rating-interval">+1 ngày</span>
+                  </button>
+                  <button class="srs-rating-btn srs-hard" id="srs-btn-hard">
+                    <span class="srs-rating-icon">😬</span>
+                    <span class="srs-rating-label">Khó</span>
+                    <span class="srs-rating-interval" id="srs-int-hard">+2 ngày</span>
+                  </button>
+                  <button class="srs-rating-btn srs-good" id="srs-btn-good">
+                    <span class="srs-rating-icon">😊</span>
+                    <span class="srs-rating-label">Nhớ được</span>
+                    <span class="srs-rating-interval" id="srs-int-good">+4 ngày</span>
+                  </button>
+                  <button class="srs-rating-btn srs-easy" id="srs-btn-easy">
+                    <span class="srs-rating-icon">🎉</span>
+                    <span class="srs-rating-label">Dễ</span>
+                    <span class="srs-rating-interval" id="srs-int-easy">+7 ngày</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SRS Result -->
+          <div class="srs-result hidden" id="srs-result">
+            <div class="srs-result-emoji">🧠</div>
+            <h3>Hoàn Thành Phiên Ôn Tập!</h3>
+            <div class="srs-result-stats">
+              <div class="srs-result-item"><span id="srs-res-again">0</span><small>Quên</small></div>
+              <div class="srs-result-item good"><span id="srs-res-good">0</span><small>Nhớ được</small></div>
+              <div class="srs-result-item easy"><span id="srs-res-easy">0</span><small>Dễ</small></div>
+            </div>
+            <p class="srs-result-msg" id="srs-result-msg"></p>
+            <button class="btn btn-primary" id="srs-finish-btn" style="margin-top:1.5rem;width:100%">Xong</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- FOOTER — Premium Dark Blue -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content" style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding-bottom:2rem;gap:2rem">
+
+          <!-- Brand -->
+          <div class="footer-brand">
+            <div class="footer-logo-text">
+              VocabFlow <span class="footer-badge-pro">PRO</span>
+            </div>
+            <p class="footer-tagline" style="font-size:0.78rem;color:hsl(220 15% 50%);margin-top:5px">
+              Smart Learning • Better Vocabulary
+            </p>
+          </div>
+
+          <!-- Center Nav -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+            <div style="display:flex;gap:2rem">
+              <a href="#" style="color:hsl(220 15% 52%);text-decoration:none;font-size:0.82rem;font-family:'Nunito',sans-serif;font-weight:500;transition:color 0.2s"
+                onmouseover="this.style.color='hsl(214 90% 72%)'" onmouseout="this.style.color='hsl(220 15% 52%)'">Bài Học</a>
+              <a href="#" style="color:hsl(220 15% 52%);text-decoration:none;font-size:0.82rem;font-family:'Nunito',sans-serif;font-weight:500;transition:color 0.2s"
+                onmouseover="this.style.color='hsl(214 90% 72%)'" onmouseout="this.style.color='hsl(220 15% 52%)'">Ôn Tập</a>
+              <a href="#" style="color:hsl(220 15% 52%);text-decoration:none;font-size:0.82rem;font-family:'Nunito',sans-serif;font-weight:500;transition:color 0.2s"
+                onmouseover="this.style.color='hsl(214 90% 72%)'" onmouseout="this.style.color='hsl(220 15% 52%)'">Thư Viện</a>
+              <a href="#" style="color:hsl(220 15% 52%);text-decoration:none;font-size:0.82rem;font-family:'Nunito',sans-serif;font-weight:500;transition:color 0.2s"
+                onmouseover="this.style.color='hsl(214 90% 72%)'" onmouseout="this.style.color='hsl(220 15% 52%)'">Xếp Hạng</a>
+            </div>
+          </div>
+
+          <!-- Social -->
+          <div style="display:flex;gap:0.65rem;justify-content:flex-end">
+            <a href="#" title="Facebook" style="width:36px;height:36px;border-radius:50%;background:hsl(220 20% 16%);border:1px solid hsl(220 20% 22%);display:flex;align-items:center;justify-content:center;color:hsl(220 15% 55%);text-decoration:none;transition:all 0.25s ease"
+              onmouseover="this.style.background='hsl(214 90% 52%)';this.style.color='white';this.style.transform='translateY(-3px)'"
+              onmouseout="this.style.background='hsl(220 20% 16%)';this.style.color='hsl(220 15% 55%)';this.style.transform='translateY(0)'">
+              <i class="fa-brands fa-facebook-f" style="font-size:0.875rem"></i>
+            </a>
+            <a href="#" title="Instagram" style="width:36px;height:36px;border-radius:50%;background:hsl(220 20% 16%);border:1px solid hsl(220 20% 22%);display:flex;align-items:center;justify-content:center;color:hsl(220 15% 55%);text-decoration:none;transition:all 0.25s ease"
+              onmouseover="this.style.background='hsl(214 90% 52%)';this.style.color='white';this.style.transform='translateY(-3px)'"
+              onmouseout="this.style.background='hsl(220 20% 16%)';this.style.color='hsl(220 15% 55%)';this.style.transform='translateY(0)'">
+              <i class="fa-brands fa-instagram" style="font-size:0.875rem"></i>
+            </a>
+            <a href="#" title="YouTube" style="width:36px;height:36px;border-radius:50%;background:hsl(220 20% 16%);border:1px solid hsl(220 20% 22%);display:flex;align-items:center;justify-content:center;color:hsl(220 15% 55%);text-decoration:none;transition:all 0.25s ease"
+              onmouseover="this.style.background='hsl(214 90% 52%)';this.style.color='white';this.style.transform='translateY(-3px)'"
+              onmouseout="this.style.background='hsl(220 20% 16%)';this.style.color='hsl(220 15% 55%)';this.style.transform='translateY(0)'">
+              <i class="fa-brands fa-youtube" style="font-size:0.875rem"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-bottom" style="padding-top:1.25rem;border-top:1px solid hsl(220 20% 14%);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem">
+          <p style="font-size:0.76rem;color:hsl(220 15% 38%);font-weight:500;margin:0">&copy; <span id="footer-year">2026</span> VocabFlow. All rights reserved.</p>
+          <p style="font-size:0.76rem;color:hsl(220 15% 32%);margin:0">Made with ❤️ for learners</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Modals -->
+    <div class="modal-overlay hidden" id="deck-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="modal-title">Tạo Bộ Từ Mới</h3>
+          <button class="close-btn" id="close-deck-modal-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="deck-name">Tên Bộ Từ</label>
+            <input type="text" id="deck-name" placeholder="Ví dụ: Từ vựng IELTS"/>
+          </div>
+          <div class="data-card ai-analyze-section" style="margin-bottom:1.5rem;background:hsl(var(--muted));border:none;box-shadow:none">
+            <h4 class="section-title" style="margin-top:0">Phân Tích Tài Liệu (AI)</h4>
+            <div class="form-group" style="margin-bottom:0.75rem">
+              <label for="ai-source-type">Nguồn Dữ Liệu</label>
+              <div class="select-wrapper">
+                <select id="ai-source-type" class="select-input">
+                  <option value="text">Văn bản (Text)</option>
+                  <option value="file">File (PDF, DOCX, TXT, Ảnh)</option>
+                </select>
+              </div>
+
+            </div>
+            <div id="ai-text-input-area" class="input-area-wrapper">
+              <div class="form-group">
+                <textarea id="quick-import-text" rows="4" placeholder="Dán đoạn văn tiếng Anh vào đây..."></textarea>
+              </div>
+            </div>
+            <div id="ai-file-input-area" class="input-area-wrapper hidden">
+              <div class="form-group file-input-group">
+                <label class="custom-file-upload btn btn-outline" for="ai-file-input" style="width:100%;justify-content:center;gap:0.5rem">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0">
+                    <path d="M4 14.899V20a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5.1"/>
+                    <path d="M15 9l-3-3-3 3"/><path d="M12 2v14"/>
+                  </svg>
+                  <span id="file-name-display">Chọn file (có thể chọn nhiều)</span>
+                </label>
+                <input type="file" id="ai-file-input" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg,.webp" multiple style="display:none"/>
+                <p style="font-size:0.72rem;color:hsl(var(--muted-foreground));margin-top:0.4rem">Chọn tối đa 5 file · PDF, DOCX, TXT, ảnh</p>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-lg btn-full" id="analyze-with-ai-btn"
+              style="margin-top:0.5rem;background:linear-gradient(135deg,hsl(214 90% 52%),hsl(225 85% 60%))">
+              Phân Tích & Trích Xuất (AI)
+            </button>
+          </div>
+          <h4 style="display:flex;justify-content:space-between">
+            Danh Sách Từ <span id="word-count-in-modal" class="badge">0 từ</span>
+          </h4>
+          <div id="word-preview-container" class="hidden data-card table-responsive" style="margin-bottom:1rem;padding:1rem">
+            <table class="data-table" id="ai-preview-table" style="font-size:0.85rem">
+              <thead>
+                <tr>
+                  <th><input type="checkbox" id="select-all-words" checked/></th>
+                  <th>Từ Vựng</th><th>IPA</th><th>Nghĩa</th><th>Ví dụ</th>
+                </tr>
+              </thead>
+              <tbody id="ai-preview-table-body"></tbody>
+            </table>
+            <button class="btn btn-primary" id="add-selected-words-btn" style="margin-top:1rem">Thêm Từ Đã Chọn vào Deck</button>
+          </div>
+          <div id="word-inputs-container"></div>
+          <button class="btn btn-outline" id="add-word-field-btn">+ Thêm Từ Thủ Công</button>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="cancel-deck-modal-btn">Hủy</button>
+          <button class="btn btn-primary" id="save-deck-btn">Lưu Bộ Từ</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="register-modal">
+      <div class="modal auth-modal-card">
+        <div class="auth-modal-accent"></div>
+        <button class="close-btn auth-close-btn" id="close-register-modal-btn">&times;</button>
+        <div class="auth-modal-body">
+          <div class="auth-brand">
+            <div class="auth-brand-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </div>
+            <span class="auth-brand-name">VocabFlow</span>
+          </div>
+          <h2 class="auth-heading">Tạo tài khoản</h2>
+          <p class="auth-subheading">Học từ vựng thông minh, miễn phí hoàn toàn.</p>
+          <div class="auth-field">
+            <label for="register-email">Email</label>
+            <div class="auth-input-wrapper">
+              <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <input type="email" id="register-email" placeholder="ten@email.com" autocomplete="email"/>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="register-password">Mật khẩu</label>
+            <div class="auth-input-wrapper">
+              <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="register-password" placeholder="Ít nhất 6 ký tự" autocomplete="new-password"/>
+              <button type="button" class="auth-eye-btn" data-target="register-password" aria-label="Hiện/ẩn mật khẩu">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <p class="auth-message hidden" id="register-message"></p>
+          <button class="auth-submit-btn" id="register-email-btn" style="margin-top:1rem">Đăng Ký bằng Email</button>
+          <div class="auth-divider">hoặc</div>
+          <button class="auth-social-btn facebook" id="register-facebook-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            Tiếp tục với Facebook
+          </button>
+          <div class="auth-switch">Đã có tài khoản? <a href="#" id="open-login-from-register">Đăng nhập</a></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="login-modal">
+      <div class="modal auth-modal-card">
+        <div class="auth-modal-accent"></div>
+        <button class="close-btn auth-close-btn" id="close-login-modal-btn">&times;</button>
+        <div class="auth-modal-body">
+          <div class="auth-brand">
+            <div class="auth-brand-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </div>
+            <span class="auth-brand-name">VocabFlow</span>
+          </div>
+          <h2 class="auth-heading">Chào mừng trở lại!</h2>
+          <p class="auth-subheading">Tiếp tục hành trình học từ vựng của bạn.</p>
+          <div class="auth-field">
+            <label for="login-email">Email</label>
+            <div class="auth-input-wrapper">
+              <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <input type="email" id="login-email" placeholder="ten@email.com" autocomplete="email"/>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="login-password">Mật khẩu</label>
+            <div class="auth-input-wrapper">
+              <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="login-password" placeholder="Mật khẩu của bạn" autocomplete="current-password"/>
+              <button type="button" class="auth-eye-btn" data-target="login-password" aria-label="Hiện/ẩn mật khẩu">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <p class="auth-message hidden" id="login-message"></p>
+          <button class="auth-submit-btn" id="login-email-btn" style="margin-top:1rem">Đăng Nhập</button>
+          <div class="auth-divider">hoặc</div>
+          <button class="auth-social-btn facebook" id="login-facebook-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            Tiếp tục với Facebook
+          </button>
+          <div class="auth-switch">Chưa có tài khoản? <a href="#" id="open-register-from-login">Đăng ký miễn phí</a></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="chat-modal">
+      <div class="modal chat-modal-content">
+        <div class="modal-header">
+          <h3 id="chat-modal-title">AI Coach - Luyện Tập Ngôn Ngữ</h3>
+          <button class="close-btn" id="close-chat-modal-btn">&times;</button>
+        </div>
+        <div class="modal-body chat-messages-container" id="chat-messages-container"></div>
+        <div class="modal-footer chat-input-area">
+          <textarea id="chat-input" placeholder="Nhập tin nhắn..." rows="1" maxlength="500"></textarea>
+          <button class="btn btn-primary" id="send-chat-btn">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Avatar Lightbox -->
+    <div id="avatar-lightbox" style="display:none;position:fixed;inset:0;background:hsl(0 0% 0% / 0.75);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px);cursor:zoom-out" onclick="this.style.display='none'">
+      <img id="avatar-lb-img" src="" alt="" style="max-width:min(360px,90vw);max-height:min(360px,90vh);border-radius:50%;box-shadow:0 0 0 6px hsl(0 0% 100% / 0.2),0 24px 64px hsl(0 0% 0% / 0.5);object-fit:cover">
+    </div>
+    <script>
+      document.getElementById('footer-year').textContent = new Date().getFullYear();
+    </script>
+
+    <!-- ===== AVATAR + SRS EXTENSION ===== -->
+    <script>
+    // ─── AVATAR MODULE ───────────────────────────────────────────────
+    // Avatar lưu trên SERVER (MongoDB) — không dùng localStorage nữa
+    // API: POST /api/user/avatar  { avatar: base64DataURL }
+    //      GET  /api/user/me      → trả về field avatar
+    // Cache nhẹ trong memory để tránh nhấp nháy
+    window._avatarCache = null;
+
+    function migrateAvatar() {} // giữ lại để không lỗi nếu nơi khác gọi
+
+    function getInitials(name) {
+      if (!name) return '?';
+      const clean = name.includes('@') ? name.split('@')[0] : name;
+      const parts = clean.split(/[\s._-]+/).filter(Boolean);
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+      return clean.slice(0, 2).toUpperCase();
+    }
+
+    function avatarGradient(name) {
+      const gradients = [
+        'linear-gradient(135deg, hsl(214 90% 52%), hsl(258 80% 62%))',
+        'linear-gradient(135deg, hsl(162 72% 42%), hsl(214 90% 52%))',
+        'linear-gradient(135deg, hsl(280 72% 55%), hsl(214 90% 52%))',
+        'linear-gradient(135deg, hsl(24 90% 55%), hsl(280 72% 55%))',
+        'linear-gradient(135deg, hsl(340 80% 55%), hsl(24 90% 55%))',
+      ];
+      let hash = 0;
+      for (const c of (name||'')) hash += c.charCodeAt(0);
+      return gradients[hash % gradients.length];
+    }
+
+    function loadAvatar(username) {
+      // Lấy avatar_url từ currentUser — thêm backend base URL nếu là relative path
+      const rawUrl = (window.currentUser && window.currentUser.avatar_url) || null;
+      const apiBase = (window.BACKEND_API_URL || 'http://127.0.0.1:5000/api').replace(/\/api$/, '');
+      const stored = rawUrl
+        ? (rawUrl.startsWith('http') ? rawUrl : apiBase + rawUrl)
+        : null;
+      const initials = getInitials(username);
+      const grad = avatarGradient(username);
+
+      // Helper to apply avatar to a circle
+      function applyToCircle(img, ini, circle) {
+        if (!circle) return;
+        circle.style.background = stored ? 'transparent' : grad;
+        if (stored) { img.src = stored; img.style.display = 'block'; ini.style.display = 'none'; }
+        else { img.style.display = 'none'; ini.style.display = 'flex'; ini.textContent = initials; }
+      }
+
+      // Header avatar
+      const hBtn = document.getElementById('header-avatar-btn');
+      const hImg = document.getElementById('header-avatar-img');
+      const hIni = document.getElementById('header-avatar-initials');
+      if (hBtn) {
+        hBtn.classList.remove('hidden');
+        applyToCircle(hImg, hIni, hBtn);
+      }
+
+      // Settings avatar
+      const sCircle = document.getElementById('settings-avatar-circle');
+      const sImg = document.getElementById('settings-avatar-img');
+      const sIni = document.getElementById('settings-avatar-initials');
+      const sName = document.getElementById('settings-username-display');
+      if (sCircle) applyToCircle(sImg, sIni, sCircle);
+      if (sName) sName.textContent = username ? (username.includes('@') ? username.split('@')[0] : username) : 'Học viên';
+    }
+
+    function hideAvatar() {
+      const hBtn = document.getElementById('header-avatar-btn');
+      if (hBtn) hBtn.classList.add('hidden');
+    }
+
+    // Expose ra window để script.js có thể gọi trực tiếp
+    window.loadAvatar = loadAvatar;
+    window.hideAvatar = hideAvatar;
+
+    // File upload handler (in Settings)
+    document.getElementById('avatar-file-input')?.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = async () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = canvas.height = 200;
+          const ctx = canvas.getContext('2d');
+          const size = Math.min(img.width, img.height);
+          const sx = (img.width - size) / 2, sy = (img.height - size) / 2;
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, 200, 200);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          // Lấy token — ưu tiên window.currentUser, fallback localStorage
+          const u = window.currentUser;
+          const token = (u && u.token) || localStorage.getItem('vocabflow_authToken');
+          const username = (u && u.username) || '';
+          if (!token) { alert('Vui lòng đăng nhập để lưu ảnh đại diện.'); return; }
+          // Upload lên server — lưu vào MongoDB
+          try {
+            const apiBase = window.BACKEND_API_URL || 'http://127.0.0.1:5000/api';
+            const res = await fetch(apiBase + '/user/avatar', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+              body: JSON.stringify({ avatar: dataUrl })
+            });
+            if (res.ok) {
+              const result = await res.json();
+              // Lưu full URL ngay để loadAvatar dùng được
+              const base = (window.BACKEND_API_URL || 'http://127.0.0.1:5000/api').replace(/\/api$/, '');
+              const avatarUrl = result.avatar_url
+                ? base + result.avatar_url + '?t=' + Date.now()
+                : null;
+              if (window.currentUser) window.currentUser.avatar_url = avatarUrl;
+              loadAvatar(username);
+            } else {
+              const err = await res.json();
+              alert('Lỗi lưu ảnh: ' + (err.msg || 'Không xác định'));
+            }
+          } catch(e) {
+            alert('Không thể kết nối server để lưu ảnh.');
+          }
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+      this.value = '';
+    });
+
+    // Hide any "Chào, ..." greeting button that script.js may inject into .user-area
+    (function hideGreeting() {
+      function scanAndHide() {
+        document.querySelectorAll('.user-area button, .user-area a').forEach(el => {
+          if (/ch[àa]o/i.test(el.textContent)) el.style.display = 'none';
+        });
+      }
+      scanAndHide();
+      const ua = document.querySelector('.user-area');
+      if (ua) new MutationObserver(scanAndHide).observe(ua, { childList: true, subtree: true, characterData: true });
+    })();
+
+    // Hook into updateAuthUI to sync avatar
+    const _origUpdateAuthUI = window.updateAuthUI;
+    window.updateAuthUI = function() {
+      if (_origUpdateAuthUI) _origUpdateAuthUI.apply(this, arguments);
+      migrateAvatar();
+      if (window.currentUser && window.currentUser.token) {
+        loadAvatar(window.currentUser.username || '');
+        const loginBtn = document.getElementById('open-login-modal-btn');
+        if (loginBtn) loginBtn.classList.add('hidden');
+      } else {
+        hideAvatar();
+      }
+    };
+
+    // *** KEY FIX: gọi loadAvatar sau khi toàn bộ JS đã load + init() đã chạy xong ***
+    // script.js gọi updateAuthUI() trước khi hook này được gắn vào window
+    // nên cần gọi lại ở đây để đảm bảo avatar hiện ngay khi vào trang
+    window.addEventListener('load', function() {
+      if (window.currentUser && window.currentUser.token) {
+        // avatar_url đã có từ loadDataFromStorage() — hiển thị ngay
+        loadAvatar(window.currentUser.username || '');
+        const loginBtn = document.getElementById('open-login-modal-btn');
+        if (loginBtn) loginBtn.classList.add('hidden');
+      }
+    });
+
+    // Also hook into settings view switch
+    const _origSwitchView = window.switchView;
+    window.switchView = function(view) {
+      if (_origSwitchView) _origSwitchView.apply(this, arguments);
+      if (view === 'settings' && window.currentUser) {
+        loadAvatar(window.currentUser.username || '');
+        updateSrsBadges();
+      }
+      if (view === 'review') updateSrsBadges();
+    };
+
+    // ─── SRS MODULE ───────────────────────────────────────────────────
+    const SRS_KEY = 'vocabflow_srs';
+
+    function getSrsData() {
+      try { return JSON.parse(localStorage.getItem(SRS_KEY) || '{}'); }
+      catch { return {}; }
+    }
+    function saveSrsData(data) {
+      localStorage.setItem(SRS_KEY, JSON.stringify(data));
+    }
+
+    // SM-2 simplified: rate ∈ {0=again, 1=hard, 2=good, 3=easy}
+    function sm2Update(card, rating) {
+      let { interval = 1, ef = 2.5, reps = 0 } = card;
+      const today = todayStr();
+      if (rating === 0) { // again
+        interval = 1; reps = 0;
+      } else if (rating === 1) { // hard
+        ef = Math.max(1.3, ef - 0.15);
+        interval = Math.max(1, Math.round(interval * 1.2));
+        reps++;
+      } else if (rating === 2) { // good
+        if (reps === 0) interval = 1;
+        else if (reps === 1) interval = 3;
+        else interval = Math.round(interval * ef);
+        ef = Math.max(1.3, ef + 0.0);
+        reps++;
+      } else { // easy
+        if (reps === 0) interval = 4;
+        else interval = Math.round(interval * ef * 1.3);
+        ef = Math.min(3.0, ef + 0.15);
+        reps++;
+      }
+      const next = new Date();
+      next.setDate(next.getDate() + interval);
+      return { ...card, interval, ef, reps, lastReview: today, nextReview: next.toISOString().split('T')[0] };
+    }
+
+    function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+    // Register a word as "learned today" for SRS
+    function srsRegisterWord(wordObj, deckName) {
+      const data = getSrsData();
+      const key = wordObj.id;
+      if (!data[key]) {
+        data[key] = { word: wordObj.word, ipa: wordObj.ipa || '', meaning: wordObj.meaning,
+          exampleEn: wordObj.example?.en || '', deckName: deckName || '',
+          interval: 1, ef: 2.5, reps: 0,
+          learnedDate: todayStr(),
+          nextReview: todayStr() // due tomorrow after first review
+        };
+      }
+      saveSrsData(data);
+    }
+
+    // Hook into handleMarkWord to capture learned words
+    const _origHandleMarkWord = window.handleMarkWord;
+    window.handleMarkWord = async function(status) {
+      if (_origHandleMarkWord) await _origHandleMarkWord.apply(this, arguments);
+      if (status === 'learned' && window.activeDeckId && window.decks) {
+        const deck = window.decks.find(d => d.id === window.activeDeckId);
+        if (deck && deck.words && window.currentIndex !== undefined) {
+          const word = deck.words[window.currentIndex];
+          if (word) srsRegisterWord(word, deck.name);
+        }
+      }
+      updateSrsBadges();
+    };
+
+    function getDueWords() {
+      const data = getSrsData();
+      const today = todayStr();
+      return Object.values(data).filter(w => w.nextReview <= today);
+    }
+
+    function getTodayWords() {
+      const data = getSrsData();
+      const today = todayStr();
+      return Object.values(data).filter(w => w.learnedDate === today);
+    }
+
+    function updateSrsBadges() {
+      const due = getDueWords().length;
+      const tod = getTodayWords().length;
+      const dBadge = document.getElementById('srs-due-count-badge');
+      const tBadge = document.getElementById('srs-today-count-badge');
+      if (dBadge) dBadge.textContent = due + ' từ đến hạn';
+      if (tBadge) tBadge.textContent = tod + ' từ hôm nay';
+      if (dBadge) dBadge.style.background = due > 0 ? 'hsl(214 90% 52%)' : '';
+      if (dBadge) dBadge.style.color = due > 0 ? 'white' : '';
+    }
+
+    // ─── SRS GAME ────────────────────────────────────────────────────
+    let srsQueue = [], srsIdx = 0, srsStats = { again:0, good:0, easy:0 };
+    let srsDataSnapshot = {};
+
+    function openSrsGame(mode) {
+      const words = mode === 'due' ? getDueWords() : getTodayWords();
+      if (words.length === 0) {
+        alert(mode === 'due'
+          ? 'Chưa có từ nào đến hạn ôn! Hãy học thêm từ mới hoặc quay lại sau.'
+          : 'Bạn chưa học từ nào hôm nay. Hãy vào Bài học để bắt đầu!');
+        return;
+      }
+      srsDataSnapshot = getSrsData();
+      // Shuffle
+      srsQueue = [...words].sort(() => Math.random() - 0.5);
+      srsIdx = 0;
+      srsStats = { again: 0, good: 0, easy: 0 };
+
+      const label = document.getElementById('srs-mode-label');
+      if (label) label.textContent = mode === 'due' ? '⏰ Ôn Lặp Lại Ngắt Quãng' : '📅 Từ Học Hôm Nay';
+
+      document.getElementById('srs-overlay').classList.remove('hidden');
+      document.getElementById('srs-result').classList.add('hidden');
+      document.getElementById('srs-card-area').classList.remove('hidden');
+      srsShowCard();
+    }
+
+    function srsShowCard() {
+      if (srsIdx >= srsQueue.length) { srsShowResult(); return; }
+      const word = srsQueue[srsIdx];
+      const total = srsQueue.length;
+
+      document.getElementById('srs-current-num').textContent = srsIdx + 1;
+      document.getElementById('srs-total-num').textContent = total;
+      const pct = ((srsIdx) / total) * 100;
+      document.getElementById('srs-progress-fill').style.width = pct + '%';
+
+      document.getElementById('srs-meaning-display').textContent = word.meaning;
+      document.getElementById('srs-example-hint').textContent = word.exampleEn ? '"' + word.exampleEn + '"' : '';
+      document.getElementById('srs-word-display').textContent = word.word;
+      document.getElementById('srs-ipa-display').textContent = word.ipa || '';
+      document.getElementById('srs-example-back').textContent = word.exampleEn ? '"' + word.exampleEn + '"' : '';
+
+      // Compute preview intervals
+      const cur = srsDataSnapshot[Object.keys(srsDataSnapshot).find(k => srsDataSnapshot[k].word === word.word) || ''] || { interval: word.interval || 1, ef: word.ef || 2.5, reps: word.reps || 0 };
+      const iHard = Math.max(1, Math.round((cur.interval || 1) * 1.2));
+      const iGood = (cur.reps||0) < 2 ? (cur.reps||0) === 0 ? 1 : 3 : Math.round((cur.interval||1) * (cur.ef||2.5));
+      const iEasy = (cur.reps||0) === 0 ? 4 : Math.round((cur.interval||1) * (cur.ef||2.5) * 1.3);
+      document.getElementById('srs-int-hard').textContent = '+' + iHard + ' ngày';
+      document.getElementById('srs-int-good').textContent = '+' + iGood + ' ngày';
+      document.getElementById('srs-int-easy').textContent = '+' + iEasy + ' ngày';
+
+      // Show front
+      document.getElementById('srs-card-front').classList.remove('hidden');
+      document.getElementById('srs-card-back').classList.add('hidden');
+    }
+
+    function srsRate(rating) {
+      const word = srsQueue[srsIdx];
+      // Find key in srs data
+      const data = getSrsData();
+      const key = Object.keys(data).find(k => data[k].word === word.word);
+      if (key) {
+        data[key] = sm2Update(data[key], rating);
+        saveSrsData(data);
+        srsDataSnapshot = data;
+      }
+      if (rating === 0) srsStats.again++;
+      else if (rating === 2) srsStats.good++;
+      else if (rating === 3) srsStats.easy++;
+      else srsStats.good++;
+
+      srsIdx++;
+      srsShowCard();
+    }
+
+    function srsShowResult() {
+      document.getElementById('srs-card-area').classList.add('hidden');
+      document.getElementById('srs-result').classList.remove('hidden');
+      document.getElementById('srs-res-again').textContent = srsStats.again;
+      document.getElementById('srs-res-good').textContent = srsStats.good;
+      document.getElementById('srs-res-easy').textContent = srsStats.easy;
+      const total = srsQueue.length;
+      const pct = total > 0 ? Math.round(((srsStats.good + srsStats.easy) / total) * 100) : 0;
+      document.getElementById('srs-result-msg').textContent =
+        pct >= 80 ? '🔥 Tuyệt vời! Bộ nhớ của bạn rất tốt hôm nay.' :
+        pct >= 50 ? '💪 Tiến bộ tốt! Tiếp tục ôn tập nhé.' :
+        '🌱 Đừng nản lòng — lặp lại nhiều hơn sẽ nhớ thôi!';
+      document.getElementById('srs-progress-fill').style.width = '100%';
+      updateSrsBadges();
+    }
+
+    // Wire up buttons
+    document.getElementById('start-srs-due-btn')?.addEventListener('click', () => openSrsGame('due'));
+    document.getElementById('start-srs-today-btn')?.addEventListener('click', () => openSrsGame('today'));
+    document.getElementById('srs-show-btn')?.addEventListener('click', () => {
+      document.getElementById('srs-card-front').classList.add('hidden');
+      document.getElementById('srs-card-back').classList.remove('hidden');
+    });
+    document.getElementById('srs-btn-again')?.addEventListener('click', () => srsRate(0));
+    document.getElementById('srs-btn-hard')?.addEventListener('click',  () => srsRate(1));
+    document.getElementById('srs-btn-good')?.addEventListener('click',  () => srsRate(2));
+    document.getElementById('srs-btn-easy')?.addEventListener('click',  () => srsRate(3));
+    document.getElementById('srs-close-btn')?.addEventListener('click', () => {
+      document.getElementById('srs-overlay').classList.add('hidden');
+      updateSrsBadges();
+    });
+    document.getElementById('srs-finish-btn')?.addEventListener('click', () => {
+      document.getElementById('srs-overlay').classList.add('hidden');
+      updateSrsBadges();
+    });
+
+    // Init on load
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        updateSrsBadges();
+        if (window.currentUser) loadAvatar(window.currentUser.username || '');
+      }, 600);
+    });
+    </script>
+  
+    <!-- Eye button toggle password -->
+    <script>
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('.auth-eye-btn');
+      if (!btn) return;
+      const targetId = btn.getAttribute('data-target');
+      const inp = document.getElementById(targetId);
+      if (!inp) return;
+      const isPass = inp.type === 'password';
+      inp.type = isPass ? 'text' : 'password';
+      btn.innerHTML = isPass
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    });
+    </script>
+
+    <!-- ===== PRONUNCIATION AI MODULE v2 ===== -->
+    <script>
+    (function() {
+      'use strict';
+
+      // ── State ────────────────────────────────────────────
+      let pgWords       = [];   // danh sách từ phiên này
+      let pgIndex       = 0;    // vị trí hiện tại
+      let mediaRecorder = null;
+      let audioChunks   = [];
+      let sessionScores = [];   // [{word, score}]
+
+      // ── Elements ─────────────────────────────────────────
+      const overlay      = () => document.getElementById('pronun-overlay');
+      const el           = id  => document.getElementById(id);
+
+      // ── Helpers ───────────────────────────────────────────
+      function showState(name) {
+        ['idle','recording','analyzing','result'].forEach(s => {
+          el('pg-state-' + s).classList.toggle('hidden', s !== name);
+        });
+      }
+
+      function updateProgress() {
+        const total = pgWords.length;
+        el('pronun-current-num').textContent = Math.min(pgIndex + 1, total);
+        el('pronun-total-num').textContent   = total;
+        const pct = total ? (pgIndex / total) * 100 : 0;
+        el('pronun-progress-fill').style.width = pct + '%';
+      }
+
+      function loadWord(idx) {
+        if (idx >= pgWords.length) { endSession(); return; }
+        const w = pgWords[idx];
+        el('pg-word').textContent    = w.word    || '';
+        el('pg-ipa').textContent     = w.ipa     ? '/' + w.ipa + '/' : '';
+        el('pg-meaning').textContent = w.meaning || '';
+        showState('idle');
+        updateProgress();
+      }
+
+      function scoreColor(s) {
+        if (s >= 80) return '#22c55e';
+        if (s >= 60) return '#f59e0b';
+        return '#ef4444';
+      }
+
+      function renderScoreRing(score) {
+        const arc = el('pg-score-arc');
+        const r   = 26, circ = 2 * Math.PI * r;
+        const pct = Math.max(0, Math.min(100, score)) / 100;
+        arc.style.strokeDasharray  = circ;
+        arc.style.strokeDashoffset = circ * (1 - pct);
+        arc.style.stroke = scoreColor(score);
+        el('pg-score-num').textContent = score;
+        el('pg-score-num').style.color = scoreColor(score);
+      }
+
+      function renderResult(data) {
+        const score = data.score || 0;
+        renderScoreRing(score);
+
+        // Verdict
+        const verdicts = { 'Xuất sắc': '🌟', 'Tốt': '👍', 'Khá': '🙂', 'Cần cải thiện': '💪' };
+        const icon = verdicts[data.overall] || '🎙️';
+        el('pg-verdict').textContent     = icon + ' ' + (data.overall || '');
+        el('pg-verdict-sub').textContent = score >= 80 ? 'Phát âm rất tốt!' : score >= 60 ? 'Tiếp tục luyện tập!' : 'Hãy nghe lại và thử thêm.';
+
+        // Feedback list
+        let html = '';
+        if (data.correct)           html += '<div class="pg-fb-item correct">✅ ' + data.correct + '</div>';
+        if (data.errors)            html += '<div class="pg-fb-item error">⚠️ ' + data.errors + '</div>';
+        if (data.tip)               html += '<div class="pg-fb-item tip">💡 ' + data.tip + '</div>';
+        if (data.phonetic_feedback) html += '<div class="pg-fb-item phonetic">🔤 ' + data.phonetic_feedback + '</div>';
+        el('pg-feedback-list').innerHTML = html;
+
+        // Lưu điểm phiên
+        const w = pgWords[pgIndex] || {};
+        sessionScores.push({ word: w.word || '', score });
+        renderSessionScores();
+
+        showState('result');
+      }
+
+      function renderSessionScores() {
+        const container = el('pronun-session-scores');
+        if (!container || sessionScores.length === 0) return;
+        container.innerHTML = sessionScores.map(s =>
+          '<div class="pg-session-dot" title="' + s.word + ': ' + s.score + '" style="background:' + scoreColor(s.score) + '">' +
+            '<span>' + s.word.slice(0, 3) + '</span>' +
+          '</div>'
+        ).join('');
+      }
+
+      function endSession() {
+        const avg = sessionScores.length
+          ? Math.round(sessionScores.reduce((a,b) => a + b.score, 0) / sessionScores.length)
+          : 0;
+        el('pg-word').textContent    = '🎉 Hoàn thành!';
+        el('pg-ipa').textContent     = '';
+        el('pg-meaning').textContent = 'Điểm trung bình phiên: ' + avg + '/100';
+        showState('idle');
+        el('pg-mic-start').style.display = 'none';
+        el('pronun-current-num').textContent = pgWords.length;
+      }
+
+      // ── Open / Close ─────────────────────────────────────
+      function openPronunMode() {
+        // Lấy từ từ deck hiện tại
+        const allDecks = window._decks || [];
+        const activeId = window._activeDeckId;
+        let words = [];
+        if (activeId) {
+          const deck = allDecks.find(d => d.id === activeId);
+          if (deck) words = deck.words || [];
+        }
+        if (!words.length) {
+          allDecks.forEach(d => { words = words.concat(d.words || []); });
+        }
+        if (!words.length) {
+          alert('Chưa có từ vựng nào. Hãy tạo bộ từ trước!');
+          return;
+        }
+
+        // Shuffle
+        pgWords = words.slice().sort(() => Math.random() - 0.5).slice(0, 20);
+        pgIndex = 0;
+        sessionScores = [];
+        el('pronun-session-scores').innerHTML = '';
+        el('pg-mic-start').style.display = '';
+
+        overlay().classList.remove('hidden');
+        loadWord(0);
+      }
+
+      function closePronunMode() {
+        overlay().classList.add('hidden');
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+          mediaRecorder.stream?.getTracks().forEach(t => t.stop());
+        }
+        mediaRecorder = null;
+      }
+
+      // ── Nghe phát âm chuẩn ───────────────────────────────
+      el('pg-listen-btn')?.addEventListener('click', function() {
+        const word = el('pg-word').textContent;
+        if (!word || word.includes('🎉')) return;
+        const utter = new SpeechSynthesisUtterance(word);
+        utter.lang = 'en-US'; utter.rate = 0.85;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utter);
+        this.classList.add('playing');
+        utter.onend = () => this.classList.remove('playing');
+      });
+
+      // ── Ghi âm ───────────────────────────────────────────
+      el('pg-mic-start')?.addEventListener('click', async function() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          audioChunks = [];
+          const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+          mediaRecorder = new MediaRecorder(stream, { mimeType });
+          mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+          mediaRecorder.start(100);
+          showState('recording');
+        } catch(e) {
+          alert('Không thể truy cập microphone. Vui lòng cấp quyền trong trình duyệt.');
+        }
+      });
+
+      // ── Dừng & gửi AI ────────────────────────────────────
+      el('pg-mic-stop')?.addEventListener('click', function() {
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+        showState('analyzing');
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(t => t.stop());
+
+        mediaRecorder.onstop = async () => {
+          const blob    = new Blob(audioChunks, { type: 'audio/webm' });
+          const reader  = new FileReader();
+          reader.onload = async ev => {
+            try {
+              const token   = (window.currentUser && window.currentUser.token)
+                              || localStorage.getItem('vocabflow_authToken');
+              const apiBase = window.BACKEND_API_URL || 'http://127.0.0.1:5000/api';
+              const word    = pgWords[pgIndex] || {};
+              const res = await fetch(apiBase + '/pronunciation/check', {
+                method : 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body   : JSON.stringify({ word: word.word, ipa: word.ipa, audio: ev.target.result })
+              });
+              if (res.ok) {
+                renderResult(await res.json());
+              } else {
+                renderResult({ score: 0, overall: 'Lỗi', errors: 'Không phân tích được, thử lại.', correct:'', tip:'', phonetic_feedback:'' });
+              }
+            } catch(e) {
+              renderResult({ score: 0, overall: 'Lỗi kết nối', errors: e.message, correct:'', tip:'', phonetic_feedback:'' });
+            }
+          };
+          reader.readAsDataURL(blob);
+        };
+      });
+
+      // ── Thử lại ──────────────────────────────────────────
+      el('pg-retry-btn')?.addEventListener('click', () => {
+        sessionScores.pop(); // xóa điểm vừa rồi
+        renderSessionScores();
+        showState('idle');
+      });
+
+      // ── Từ tiếp ───────────────────────────────────────────
+      el('pg-next-btn')?.addEventListener('click', () => {
+        pgIndex++;
+        loadWord(pgIndex);
+        updateProgress();
+      });
+
+      // ── Đóng ────────────────────────────────────────────
+      el('pronun-game-close')?.addEventListener('click', closePronunMode);
+      overlay()?.addEventListener('click', e => { if (e.target === overlay()) closePronunMode(); });
+
+      // ── Mở từ mode-selection ─────────────────────────────
+      document.getElementById('start-pronun-btn')?.addEventListener('click', openPronunMode);
+
+      // Expose decks từ script.js
+      const _origRenderDeckList = window.renderDeckList;
+      window.renderDeckList = function() {
+        if (_origRenderDeckList) _origRenderDeckList.apply(this, arguments);
+        window._decks        = window.__decks_ref || [];
+        window._activeDeckId = window.__activeDeckId_ref || null;
+      };
+
+    })();
+    </script>
+
+    <!-- ===== LUYỆN PHÁT ÂM AI MODULE ===== -->
+    <script>
+    (function() {
+      // ── State ──────────────────────────────────────────────
+      let pgWords = [];
+      let pgIndex = 0;
+      let pgScores = [];
+      let mediaRecorder = null;
+      let audioChunks = [];
+
+      // ── Helpers ────────────────────────────────────────────
+      const $ = id => document.getElementById(id);
+
+      function showState(name) {
+        ['idle','recording','analyzing','result'].forEach(s => {
+          $(`pg-state-${s}`).classList.toggle('hidden', s !== name);
+        });
+      }
+
+      function updateProgress() {
+        $('pronun-current-num').textContent = pgIndex + 1;
+        $('pronun-total-num').textContent = pgWords.length;
+        const fill = $('pronun-progress-fill');
+        if (fill) fill.style.width = ((pgIndex / pgWords.length) * 100) + '%';
+        // Điểm TB
+        if (pgScores.length) {
+          const avg = Math.round(pgScores.reduce((a,b)=>a+b,0)/pgScores.length);
+          $('pronun-avg-score') && ($('pronun-avg-score').textContent = avg);
+        }
+      }
+
+      function loadWord(idx) {
+        if (idx >= pgWords.length) { showFinalResult(); return; }
+        const w = pgWords[idx];
+        $('pg-word').textContent = w.word;
+        $('pg-ipa').textContent  = w.ipa ? `/${w.ipa}/` : '';
+        $('pg-meaning').textContent = w.meaning || '';
+        showState('idle');
+        updateProgress();
+      }
+
+      // ── Nghe phát âm chuẩn (TTS) ──────────────────────────
+      $('pg-listen-btn')?.addEventListener('click', () => {
+        const word = pgWords[pgIndex]?.word;
+        if (!word) return;
+        const utter = new SpeechSynthesisUtterance(word);
+        utter.lang = 'en-US'; utter.rate = 0.85;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utter);
+      });
+
+      // ── Bắt đầu ghi âm ─────────────────────────────────────
+      $('pg-mic-start')?.addEventListener('click', async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          audioChunks = [];
+          mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+          mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+          mediaRecorder.start();
+          showState('recording');
+        } catch(e) {
+          alert('Không thể dùng microphone. Vui lòng cấp quyền mic cho trình duyệt.');
+        }
+      });
+
+      // ── Dừng và gửi AI phân tích ────────────────────────────
+      $('pg-mic-stop')?.addEventListener('click', () => {
+        if (!mediaRecorder) return;
+        showState('analyzing');
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(t => t.stop());
+
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(audioChunks, { type: 'audio/webm' });
+          const reader = new FileReader();
+          reader.onload = async ev => {
+            try {
+              const token = (window.currentUser && window.currentUser.token)
+                            || localStorage.getItem('vocabflow_authToken');
+              const apiBase = window.BACKEND_API_URL || 'http://127.0.0.1:5000/api';
+              const w = pgWords[pgIndex];
+              const res = await fetch(apiBase + '/pronunciation/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ word: w.word, ipa: w.ipa || '', audio: ev.target.result })
+              });
+
+              if (!res.ok) throw new Error('Server error');
+              const data = await res.json();
+              renderResult(data, w.word);
+            } catch(e) {
+              renderResult({ score: 0, overall: 'Lỗi kết nối', errors: e.message, correct: '', tip: '' }, pgWords[pgIndex]?.word || '');
+            }
+          };
+          reader.readAsDataURL(blob);
+        };
+      });
+
+      // ── Render kết quả ──────────────────────────────────────
+      function renderResult(data, word) {
+        const score = data.score || 0;
+        pgScores.push(score);
+
+        // Score arc SVG
+        const arc = $('pg-score-arc');
+        const circumference = 2 * Math.PI * 26; // r=26
+        arc.style.strokeDasharray = circumference;
+        arc.style.strokeDashoffset = circumference * (1 - score / 100);
+        arc.style.stroke = score >= 80 ? 'hsl(158 64% 42%)' : score >= 60 ? 'hsl(45 90% 50%)' : 'hsl(4 86% 56%)';
+        $('pg-score-num').textContent = score;
+
+        $('pg-verdict').textContent = data.overall || '';
+        $('pg-verdict-sub').textContent = word;
+
+        // Feedback list
+        let html = '';
+        if (data.correct) html += `<div class="pg-fb-item correct">✅ ${data.correct}</div>`;
+        if (data.errors)  html += `<div class="pg-fb-item error">⚠️ ${data.errors}</div>`;
+        if (data.tip)     html += `<div class="pg-fb-item tip">💡 ${data.tip}</div>`;
+        if (data.phonetic_feedback) html += `<div class="pg-fb-item phonetic">🔤 ${data.phonetic_feedback}</div>`;
+        $('pg-feedback-list').innerHTML = html;
+
+        // Session score dots
+        const dot = document.createElement('div');
+        dot.className = 'pg-score-dot ' + (score >= 80 ? 'great' : score >= 60 ? 'good' : 'poor');
+        dot.title = `${word}: ${score}`;
+        dot.textContent = score;
+        $('pronun-session-scores')?.appendChild(dot);
+
+        showState('result');
+        updateProgress();
+      }
+
+      // ── Thử lại từ này ──────────────────────────────────────
+      $('pg-retry-btn')?.addEventListener('click', () => {
+        pgScores.pop(); // xóa điểm vừa rồi
+        showState('idle');
+      });
+
+      // ── Từ tiếp theo ────────────────────────────────────────
+      $('pg-next-btn')?.addEventListener('click', () => {
+        pgIndex++;
+        loadWord(pgIndex);
+      });
+
+      // ── Thoát ───────────────────────────────────────────────
+      $('pronun-game-close')?.addEventListener('click', () => {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+          mediaRecorder.stream?.getTracks().forEach(t => t.stop());
+        }
+        $('pronun-overlay').classList.add('hidden');
+        speechSynthesis.cancel();
+      });
+
+      // ── Kết quả cuối ────────────────────────────────────────
+      function showFinalResult() {
+        $('pronun-overlay').classList.add('hidden');
+        // Hiện summary trong alert đơn giản (có thể làm modal sau)
+        const avg = pgScores.length ? Math.round(pgScores.reduce((a,b)=>a+b,0)/pgScores.length) : 0;
+        const best = pgScores.length ? Math.max(...pgScores) : 0;
+        alert(`🎤 Hoàn thành!
+
+Điểm trung bình: ${avg}/100
+Điểm cao nhất: ${best}/100
+Số từ luyện: ${pgScores.length}`);
+      }
+
+      // ── Khởi động từ nút Bắt Đầu ───────────────────────────
+      window.startPronunciationMode = function(words) {
+        pgWords = words.filter(w => w.word);
+        if (!pgWords.length) { alert('Bộ từ này chưa có từ nào!'); return; }
+        pgIndex = 0;
+        pgScores = [];
+        if ($('pronun-session-scores')) $('pronun-session-scores').innerHTML = '';
+        $('pronun-overlay').classList.remove('hidden');
+        loadWord(0);
+      };
+    })();
+    </script>
+    <script src="script.js"></script>
+
+    <!-- Maintenance Overlay -->
+    <div id="maintenance-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:hsl(220 20% 6%);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;color:white">
+      <div style="font-size:4rem;margin-bottom:1.5rem">🔧</div>
+      <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:0.75rem">Hệ thống đang bảo trì</h1>
+      <p id="maintenance-msg" style="font-size:1rem;opacity:0.75;max-width:440px;line-height:1.7;margin-bottom:1rem">Vui lòng quay lại sau.</p>
+      <p id="maintenance-eta" style="font-size:0.85rem;opacity:0.5"></p>
+    </div>
+
+
+</body>
+</html>

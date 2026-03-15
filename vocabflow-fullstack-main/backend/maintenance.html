@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VocabFlow — Đang bảo trì</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+    .card {
+      max-width: 520px;
+      width: 100%;
+    }
+    .icon {
+      font-size: 5rem;
+      margin-bottom: 1.5rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #6c63ff, #1d6eea);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .msg {
+      font-size: 1.05rem;
+      opacity: 0.75;
+      line-height: 1.7;
+      margin-bottom: 1rem;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .eta {
+      font-size: 0.88rem;
+      opacity: 0.5;
+      margin-bottom: 2rem;
+    }
+    .divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #6c63ff, #1d6eea);
+      border-radius: 999px;
+      margin: 1.5rem auto;
+    }
+    .progress-bar {
+      width: 100%;
+      max-width: 320px;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 999px;
+      margin: 0 auto 2rem;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6c63ff, #1d6eea);
+      border-radius: 999px;
+      animation: loading 2s ease-in-out infinite;
+      width: 40%;
+    }
+    @keyframes loading {
+      0%   { transform: translateX(-100%); }
+      50%  { transform: translateX(150%); }
+      100% { transform: translateX(-100%); }
+    }
+    .refresh-btn {
+      background: linear-gradient(135deg, #6c63ff, #1d6eea);
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .2s;
+      margin-bottom: 1.5rem;
+    }
+    .refresh-btn:hover { opacity: 0.85; }
+    .countdown {
+      font-size: 0.82rem;
+      opacity: 0.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🔧</div>
+    <h1>Đang bảo trì hệ thống</h1>
+    <p class="msg" id="maint-msg">Hệ thống đang được nâng cấp để mang lại trải nghiệm tốt hơn cho bạn. Vui lòng quay lại sau.</p>
+    <p class="eta" id="maint-eta"></p>
+    <div class="divider"></div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <button class="refresh-btn" onclick="checkAndRefresh()">🔄 Kiểm tra lại</button>
+    <p class="countdown" id="countdown"></p>
+  </div>
+
+  <script>
+    const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://127.0.0.1:5000/api'
+      : '/api';
+
+    // Nhận thông tin từ URL params (truyền từ index.html khi redirect)
+    const params = new URLSearchParams(window.location.search);
+    const msgParam = params.get('msg');
+    const etaParam = params.get('eta');
+    if (msgParam) document.getElementById('maint-msg').textContent = decodeURIComponent(msgParam);
+    if (etaParam) document.getElementById('maint-eta').textContent = 'Dự kiến hoàn thành: ' + decodeURIComponent(etaParam);
+
+    // Auto-check mỗi 30s
+    let autoCheckTimer = 30;
+    const cdEl = document.getElementById('countdown');
+    function tick() {
+      autoCheckTimer--;
+      if (autoCheckTimer <= 0) {
+        autoCheckTimer = 30;
+        checkServer();
+      }
+      cdEl.textContent = `Tự động kiểm tra sau ${autoCheckTimer}s`;
+    }
+    setInterval(tick, 1000);
+
+    async function checkServer() {
+      try {
+        const res = await fetch(API + '/protected').catch(() => null);
+        if (!res) return;
+        if (res.status !== 503) {
+          // Server up — về trang chính
+          window.location.href = '/';
+        }
+      } catch {}
+    }
+
+    async function checkAndRefresh() {
+      const btn = document.querySelector('.refresh-btn');
+      btn.textContent = '⏳ Đang kiểm tra...';
+      btn.disabled = true;
+      try {
+        const res = await fetch(API + '/protected').catch(() => null);
+        if (res && res.status !== 503) {
+          window.location.href = '/';
+          return;
+        }
+        btn.textContent = '🔧 Vẫn đang bảo trì';
+        setTimeout(() => { btn.textContent = '🔄 Kiểm tra lại'; btn.disabled = false; }, 2000);
+      } catch {
+        btn.textContent = '🔄 Kiểm tra lại';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
