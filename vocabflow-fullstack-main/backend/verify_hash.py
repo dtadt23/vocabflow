@@ -61,7 +61,6 @@ def verify_scrypt(candidate, params):
         # Older Python may not support r/p args in hashlib.scrypt
         raise RuntimeError("Your Python's hashlib.scrypt does not support r/p parameters. Use Python 3.8+ or a different environment.")
 
-# Werkzeug PBKDF2 check (if needed)
 def verify_werkzeug(candidate, stored_hash):
     try:
         from werkzeug.security import check_password_hash

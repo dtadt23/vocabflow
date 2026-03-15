@@ -1,0 +1,1 @@
+cho nó lưu sang 1 file ở thư mục code thay vì ở windown được không 
