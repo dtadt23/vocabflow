@@ -252,8 +252,8 @@ async function loadDataFromStorage() {
       parsedUser.token = storedToken;
       currentUser = parsedUser;
       window.currentUser = currentUser; // expose ra window cho các script khác
-      const decksResponse = await fetch(`${BACKEND_API_URL}/decks?_t=${Date.now()}`, {
-        headers: { Authorization: `Bearer ${currentUser.token}`, 'Cache-Control': 'no-cache' },
+      const decksResponse = await fetch(`${BACKEND_API_URL}/decks`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` },
       });
       if (decksResponse.ok) {
         const decksData = await decksResponse.json();
@@ -284,8 +284,8 @@ async function loadDataFromStorage() {
           }
         }
       } catch(e) { /* bỏ qua nếu lỗi mạng */ }
-      const progRes = await fetch(`${BACKEND_API_URL}/progress?_t=${Date.now()}`, {
-        headers: { Authorization: `Bearer ${currentUser.token}`, 'Cache-Control': 'no-cache' },
+      const progRes = await fetch(`${BACKEND_API_URL}/progress`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` },
       });
       if (progRes.ok) {
         const progData = await progRes.json();
@@ -2581,27 +2581,46 @@ function showReviewResults() {
   elements.reviewSetup.classList.add("hidden");
   elements.reviewResultCard.classList.remove("hidden");
 
-  const percentage =
-    reviewTotalQuestions > 0
-      ? Math.round((reviewScore / reviewTotalQuestions) * 100)
-      : 0;
+  const percentage = reviewTotalQuestions > 0
+    ? Math.round((reviewScore / reviewTotalQuestions) * 100) : 0;
+  const wrongCount = reviewTotalQuestions - reviewScore;
 
   if (elements.finalScore) elements.finalScore.textContent = `${reviewScore}/${reviewTotalQuestions}`;
   if (elements.finalPercent) elements.finalPercent.textContent = `${percentage}%`;
+  const wrongEl = document.getElementById("final-wrong");
+  if (wrongEl) wrongEl.textContent = wrongCount;
 
-  if (percentage >= 50) trackStudyActivity();
-
-  const iconWrapper = elements.reviewResultCard.querySelector(".result-icon-wrapper");
-  const resultTitle = elements.reviewResultCard.querySelector("h2");
-
-  if (percentage < 50) {
-    if (iconWrapper) iconWrapper.innerHTML = `<svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:48px;height:48px"><path d="m18 6-6 6-6-6"/><path d="m6 18 6-6 6-6"/></svg>`;
-    if (resultTitle) resultTitle.textContent = "Cần cố gắng thêm!";
-  } else {
-    if (iconWrapper) iconWrapper.innerHTML = `<svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:48px;height:48px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
-    if (resultTitle) resultTitle.textContent = "Hoàn Thành Ôn Tập! 🎉";
+  // Animate score ring
+  const ring = document.getElementById("result-ring-fill");
+  if (ring) {
+    const circumference = 314;
+    const offset = circumference - (percentage / 100) * circumference;
+    setTimeout(() => {
+      ring.style.strokeDashoffset = offset;
+      if (percentage >= 80) ring.style.stroke = "hsl(158 64% 42%)";
+      else if (percentage >= 50) ring.style.stroke = "hsl(214 90% 52%)";
+      else ring.style.stroke = "hsl(4 86% 56%)";
+    }, 100);
   }
 
+  // Message band
+  const msgBand = document.getElementById("result-msg-band");
+  const resultTitle = elements.reviewResultCard.querySelector("h2");
+  if (percentage >= 90) {
+    if (msgBand) { msgBand.textContent = "🔥 Xuất sắc! Bạn nắm vững kiến thức rồi!"; msgBand.style.background = "hsl(158 64% 42% / 0.12)"; msgBand.style.color = "hsl(158 64% 32%)"; }
+    if (resultTitle) resultTitle.textContent = "Xuất Sắc! 🏆";
+  } else if (percentage >= 70) {
+    if (msgBand) { msgBand.textContent = "✨ Tốt lắm! Tiếp tục ôn luyện nhé!"; msgBand.style.background = "hsl(214 90% 52% / 0.1)"; msgBand.style.color = "hsl(214 90% 42%)"; }
+    if (resultTitle) resultTitle.textContent = "Hoàn Thành! 🎉";
+  } else if (percentage >= 50) {
+    if (msgBand) { msgBand.textContent = "💪 Khá ổn! Ôn thêm một chút nữa nhé."; msgBand.style.background = "hsl(35 91% 55% / 0.1)"; msgBand.style.color = "hsl(35 91% 35%)"; }
+    if (resultTitle) resultTitle.textContent = "Cố Lên Nhé! 💪";
+  } else {
+    if (msgBand) { msgBand.textContent = "📚 Cần ôn luyện thêm. Đừng nản lòng nhé!"; msgBand.style.background = "hsl(4 86% 56% / 0.1)"; msgBand.style.color = "hsl(4 86% 40%)"; }
+    if (resultTitle) resultTitle.textContent = "Cần Cố Gắng Thêm!";
+  }
+
+  if (percentage >= 50) trackStudyActivity();
   resetReviewState();
 }
 
@@ -3018,31 +3037,3 @@ function showMaintenanceOverlay(data) {
   const params = new URLSearchParams({ msg, eta });
   window.location.href = `/maintenance.html?${params.toString()}`;
 }
-// FAB chat: thu nhỏ khi scroll xuống trên mobile
-(function() {
-  let lastScroll = 0;
-  window.addEventListener('scroll', function() {
-    const fab = document.getElementById('open-chat-btn');
-    if (!fab) return;
-    const curr = window.scrollY;
-    if (window.innerWidth <= 480) {
-      if (curr > lastScroll + 50) {
-        fab.classList.add('minimized');
-      } else if (curr < lastScroll - 20) {
-        fab.classList.remove('minimized');
-      }
-    }
-    lastScroll = curr;
-  }, { passive: true });
-})();
-
-// Word list toggle trên mobile
-window.toggleWordListMobile = function() {
-  const card = document.getElementById('word-list-card');
-  const icon = document.getElementById('word-list-toggle-icon');
-  if (!card) return;
-  card.classList.toggle('collapsed');
-  if (icon) {
-    icon.textContent = card.classList.contains('collapsed') ? '☰ Xem danh sách' : '✕ Thu gọn';
-  }
-};

@@ -52,7 +52,7 @@
             <a href="#" class="nav-link" data-view-target="review"><span class="nav-short">Ôn Tập</span></a>
             <a href="#" class="nav-link" data-view-target="wordlist"><span class="nav-short">Thư Viện</span></a>
             <a href="#" class="nav-link" data-view-target="progress"><span class="nav-short">Xếp hạng</span></a>
-            <a href="./group.html" class="nav-link" id="group-nav-link" target="_blank" rel="noopener"><span class="nav-short">Nhóm học</span></a>
+            <a href="./group.html" class="nav-link" id="group-nav-link"><span class="nav-short">Nhóm học</span></a>
           </nav>
 
           <div class="user-area">
@@ -137,7 +137,7 @@
         </svg>
         Xếp Hạng
       </a>
-      <a href="./group.html" class="mobile-nav-item" id="mnav-group" target="_blank" rel="noopener">
+      <a href="./group.html" class="mobile-nav-item" id="mnav-group">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
@@ -202,12 +202,12 @@
                 <div id="deck-panel-group" style="display:none">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
                     <span style="font-size:0.72rem;color:hsl(var(--muted-foreground))">Bộ từ từ nhóm của bạn</span>
-                    <a href="./group.html" target="_blank" rel="noopener" style="font-size:0.72rem;font-weight:700;color:hsl(var(--primary));text-decoration:none">Quản lý →</a>
+                    <a href="./group.html" style="font-size:0.72rem;font-weight:700;color:hsl(var(--primary));text-decoration:none">Quản lý →</a>
                   </div>
                   <div id="group-deck-list" style="display:flex;flex-direction:column;gap:0.3rem;max-height:200px;overflow-y:auto"></div>
                   <div id="group-deck-empty" style="display:none;text-align:center;padding:1rem 0;font-size:0.8rem;color:hsl(var(--muted-foreground))">
                     Chưa có bộ từ nhóm.<br>
-                    <a href="./group.html" target="_blank" rel="noopener" style="color:hsl(var(--primary));font-weight:700">Tham gia nhóm →</a>
+                    <a href="./group.html" style="color:hsl(var(--primary));font-weight:700">Tham gia nhóm →</a>
                   </div>
                 </div>
 
@@ -217,11 +217,7 @@
             <!-- hidden compat -->
             <div id="group-decks-card" style="display:none"></div>
 
-            <div class="word-list-card visible" id="word-list-card" data-mobile-collapsible>
-              <div class="word-list-toggle-header" onclick="toggleWordListMobile()" style="display:none;align-items:center;justify-content:space-between;padding:0.5rem 0;cursor:pointer">
-                <span style="font-weight:700;font-size:0.85rem">Danh Sách Từ</span>
-                <span id="word-list-toggle-icon" style="font-size:0.75rem;color:hsl(var(--muted-foreground))">☰ Xem danh sách</span>
-              </div>
+            <div class="word-list-card visible" id="word-list-card">
               <div class="word-list-header">
                 <h3>Danh Sách Từ</h3>
                 <span class="badge" id="word-list-badge">0 từ</span>
@@ -655,22 +651,48 @@
 
           <div class="review-result-card hidden" id="review-result-card">
             <div class="result-content">
+              <!-- Score ring -->
+              <div class="result-ring-wrap">
+                <svg class="result-ring" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="hsl(var(--muted))" stroke-width="10"/>
+                  <circle id="result-ring-fill" cx="60" cy="60" r="50" fill="none" stroke="hsl(var(--primary))"
+                    stroke-width="10" stroke-linecap="round"
+                    stroke-dasharray="314" stroke-dashoffset="314"
+                    transform="rotate(-90 60 60)"
+                    style="transition:stroke-dashoffset 1s ease,stroke .4s"/>
+                </svg>
+                <div class="result-ring-inner">
+                  <span class="result-ring-pct" id="final-percent">0%</span>
+                  <span class="result-ring-lbl">Chính xác</span>
+                </div>
+              </div>
+
+              <!-- Title + icon -->
               <div class="result-icon-wrapper"></div>
-              <h2>Hoàn Thành Ôn Tập!</h2>
-              <p>Bạn đã hoàn thành phiên ôn tập này.</p>
+              <h2 class="result-title">Hoàn Thành! 🎉</h2>
+              <p class="result-sub">Bạn đã hoàn thành phiên ôn tập này.</p>
+
+              <!-- Stats row -->
               <div class="result-stats-grid">
                 <div class="result-stat">
                   <span class="stat-value" id="final-score">0/0</span>
                   <span class="stat-label">Câu đúng</span>
                 </div>
-                <div class="result-stat">
-                  <span class="stat-value" id="final-percent">0%</span>
-                  <span class="stat-label">Tỷ lệ</span>
+                <div class="result-stat" id="result-stat-wrong">
+                  <span class="stat-value stat-value-wrong" id="final-wrong">0</span>
+                  <span class="stat-label">Câu sai</span>
                 </div>
               </div>
+
+              <!-- Message band -->
+              <div class="result-msg-band" id="result-msg-band"></div>
+
               <div class="result-actions">
-                <button class="btn btn-primary" id="review-again-btn">Ôn Tập Tiếp</button>
-                <button class="btn btn-outline" id="back-to-dashboard-btn">Về Dashboard</button>
+                <button class="btn btn-primary btn-lg" id="review-again-btn">
+                  <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                  Ôn tập lại
+                </button>
+                <button class="btn btn-outline" id="back-to-dashboard-btn">Về Bài học</button>
               </div>
             </div>
           </div>
