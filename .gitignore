@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.ipynb_checkpoints
+.mypy_cache
+.pytest_cache
+.vscode/
+
+# Node
+node_modules/
+.npm/
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+.Trashes
+Thumbs.db
+
+# Backup
+*.bak
+*.dump
+*.sql
+
+# MongoDB dump
+vocabflow_db_dump/
+
+# Generated audio
+backend/audio_cache/
