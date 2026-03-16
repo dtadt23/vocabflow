@@ -250,6 +250,10 @@ async function loadDataFromStorage() {
     try {
       const parsedUser = JSON.parse(storedUser);
       parsedUser.token = storedToken;
+      // Khôi phục preferred_voice từ localStorage nếu có
+      if (!parsedUser.preferred_voice) {
+        parsedUser.preferred_voice = parsedUser.preferred_voice || 'en-US-AriaNeural';
+      }
       currentUser = parsedUser;
       window.currentUser = currentUser; // expose ra window cho các script khác
       const decksResponse = await fetch(`${BACKEND_API_URL}/decks`, {
@@ -730,7 +734,7 @@ function setupEventListeners() {
   if (elements.startFillBtn) elements.startFillBtn.addEventListener("click", () => handleStartReview("fill"));
   document.getElementById("start-en-vi-btn")?.addEventListener("click", () => handleStartReview("en-vi"));
   if (elements.exitReviewBtn) elements.exitReviewBtn.addEventListener("click", () => switchView("review"));
-  if (elements.nextQuestionBtn) elements.nextQuestionBtn.addEventListener("click", () => { reviewCurrentIndex++; loadNextQuestion(); });
+  if (elements.nextQuestionBtn) elements.nextQuestionBtn.addEventListener("click", () => { loadNextQuestion(); });
 
   // Luyện Phát Âm AI
   document.getElementById('start-pronun-btn')?.addEventListener('click', () => {
@@ -1376,7 +1380,21 @@ async function handleSaveSettings() {
       method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${currentUser.token}` }, body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (res.ok) { alert("Cập nhật cài đặt thành công!"); if (voiceSelect) currentUser.preferred_voice = voiceSelect.value; applyTheme(themeSelect.value); newPassInput.value = ""; confirmPassInput.value = ""; }
+    if (res.ok) {
+      alert("Cập nhật cài đặt thành công!");
+      if (voiceSelect) {
+        currentUser.preferred_voice = voiceSelect.value;
+        window.currentUser = currentUser;
+        // Lưu vào localStorage để persist
+        try {
+          const stored = JSON.parse(localStorage.getItem('vocabflow_currentUser') || '{}');
+          stored.preferred_voice = voiceSelect.value;
+          localStorage.setItem('vocabflow_currentUser', JSON.stringify(stored));
+        } catch(e) {}
+      }
+      applyTheme(themeSelect.value);
+      newPassInput.value = ""; confirmPassInput.value = "";
+    }
     else alert(`Lỗi: ${data.msg}`);
   } catch { alert("Không thể kết nối đến server."); }
   finally { saveBtn.disabled = false; saveBtn.textContent = "Lưu Thay Đổi"; }
@@ -3799,19 +3817,20 @@ function showMaintenanceOverlay(data) {
       return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // ── Boot ──────────────────────────────────────────────
-    init();
+    // ── KHÔNG tự boot — chờ initGroupView() được gọi từ switchView ──
 
   })();
-  
 
-  // Override init để dùng group view
+  // Được gọi khi user bấm tab "Nhóm học"
   window.initGroupView = async function() {
     if (!groupInitialized) {
       groupInitialized = true;
       await init();
     } else {
-      loadMyGroups();
+      // Đã init rồi, chỉ reload groups
+      if (typeof loadMyGroups === 'function') {
+        loadMyGroups();
+      }
     }
   };
 })();
