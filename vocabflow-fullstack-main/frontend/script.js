@@ -277,15 +277,10 @@ async function loadDataFromStorage() {
           } else {
             currentUser.avatar_url = null;
           }
-          // Load preferred_voice và theme ngay khi khởi động — FIX giọng đọc
-          if (meData.preferred_voice) {
-            currentUser.preferred_voice = meData.preferred_voice;
-          }
-          if (meData.theme) {
-            applyTheme(meData.theme);
-          }
+          // Load preferred_voice + theme ngay khi boot
+          if (meData.preferred_voice) currentUser.preferred_voice = meData.preferred_voice;
+          if (meData.theme) applyTheme(meData.theme);
           window.currentUser = currentUser;
-          // Gọi loadAvatar ngay sau khi có avatar_url — không chờ updateAuthUI
           if (typeof window.loadAvatar === 'function') {
             window.loadAvatar(currentUser.username || '');
           }
@@ -328,7 +323,7 @@ async function handleShareDeck(deckId) {
 async function init() {
   setupEventListeners();
   try { await loadDataFromStorage(); } catch (e) { console.error("❌ Lỗi tải dữ liệu:", e); }
-  if (currentUser) setupSettings(); // Gọi SAU khi có currentUser
+  if (currentUser) setupSettings();
   updateAuthUI();
   renderDeckList();
   updateActiveDeckLabel();
@@ -1338,10 +1333,12 @@ async function setupSettings() {
       if (userData.theme) applyTheme(userData.theme);
     }
   } catch { console.error("Lỗi đồng bộ cài đặt"); }
-  if (saveBtn) {
+  if (saveBtn && saveBtn.parentNode) {
     const newSaveBtn = saveBtn.cloneNode(true);
     saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
     newSaveBtn.addEventListener("click", handleSaveSettings);
+  } else if (saveBtn) {
+    saveBtn.onclick = handleSaveSettings;
   }
   if (testVoiceBtn) {
     testVoiceBtn.onclick = (e) => {
@@ -3044,66 +3041,3 @@ function showMaintenanceOverlay(data) {
   const params = new URLSearchParams({ msg, eta });
   window.location.href = `/maintenance.html?${params.toString()}`;
 }
-// =========================================================
-// MOBILE UX ENHANCEMENTS
-// =========================================================
-
-// Word list collapsible trên mobile
-(function initWordListToggle() {
-  const card = document.getElementById('word-list-card');
-  const header = card && card.querySelector('.word-list-header');
-  if (!header) return;
-
-  function checkMobile() {
-    if (window.innerWidth <= 480) {
-      header.style.cursor = 'pointer';
-      if (!card.classList.contains('expanded')) {
-        card.classList.remove('expanded');
-      }
-      header.onclick = function() {
-        card.classList.toggle('expanded');
-        const badge = card.querySelector('#word-list-badge');
-        const icon = header.querySelector('.word-list-toggle-icon');
-        if (icon) icon.textContent = card.classList.contains('expanded') ? '▲' : '▼';
-      };
-      // Thêm icon toggle vào header nếu chưa có
-      if (!header.querySelector('.word-list-toggle-icon')) {
-        const icon = document.createElement('span');
-        icon.className = 'word-list-toggle-icon';
-        icon.style.cssText = 'font-size:0.7rem;color:hsl(var(--muted-foreground));margin-left:auto;transition:transform .2s';
-        icon.textContent = '▼';
-        header.appendChild(icon);
-      }
-    } else {
-      header.onclick = null;
-      card.classList.add('expanded');
-    }
-  }
-
-  checkMobile();
-  window.addEventListener('resize', checkMobile);
-})();
-
-// FAB thu nhỏ khi scroll xuống trên mobile
-(function initFabScroll() {
-  let lastY = 0, ticking = false;
-  window.addEventListener('scroll', function() {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(function() {
-      const fab = document.getElementById('open-chat-btn');
-      if (fab && window.innerWidth <= 480) {
-        const curr = window.scrollY;
-        if (curr > lastY + 40) {
-          fab.style.opacity = '0.4';
-          fab.style.transform = 'scale(0.8)';
-        } else if (curr < lastY - 20) {
-          fab.style.opacity = '0.9';
-          fab.style.transform = 'scale(1)';
-        }
-        lastY = curr;
-      }
-      ticking = false;
-    });
-  }, { passive: true });
-})();
