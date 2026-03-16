@@ -4048,387 +4048,97 @@ body {
 }
 
 /* ==========================================================================
-   MOBILE REDESIGN v2 — VocabFlow
-   Thiết kế lại hoàn toàn cho mobile: gọn, đẹp, thông minh
+   GLOBAL RESPONSIVE — Auto-fit mọi trình duyệt
    ========================================================================== */
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   TABLET (≤ 768px)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-@media (max-width: 768px) {
-  /* Header compact */
-  .header { padding: 0; }
-  .header-content { padding: 0.55rem 0; gap: 0.5rem; }
-  .logo-text p { display: none; }
-  .logo-text h1 { font-size: 1.1rem; }
+/* Đảm bảo layout không bị tràn ngang */
+*, *::before, *::after { box-sizing: border-box; }
+html { overflow-x: hidden; }
+body { overflow-x: hidden; min-width: 320px; }
+img, video, iframe { max-width: 100%; }
 
-  /* Nav pills compact */
-  .navigation { gap: 0.15rem; }
-  .nav-link { padding: 0.35rem 0.5rem; font-size: 0.72rem; font-weight: 700; }
-  .nav-link > .nav-full { display: none; }
-  .nav-link > .nav-short { display: inline; }
-
-  /* Main grid: 1 cột */
-  .main-grid { grid-template-columns: 1fr; gap: 0.75rem; margin-top: 0.5rem; }
-
-  /* Sidebar: dọc */
-  .sidebar { flex-direction: column; gap: 0.6rem; }
-  .my-decks-card, .word-list-card { min-width: unset; width: 100%; flex-shrink: unset; }
-
-  /* Modal */
-  .modal { width: 96vw !important; max-width: 96vw !important; }
-  .container { padding: 12px 0.75rem; }
+/* Container tự co giãn */
+.container {
+  width: 100%;
+  max-width: min(1200px, 100vw - 2rem);
+  margin: 0 auto;
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   MOBILE (≤ 480px) — Thiết kế lại hoàn toàn
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ── FAB Draggable ── */
+.fab-chat {
+  cursor: grab !important;
+  touch-action: none !important;
+  user-select: none !important;
+  transition: box-shadow 0.2s, opacity 0.2s !important;
+}
+.fab-chat:active { cursor: grabbing !important; }
+
+/* ── Mode card vi-en ── */
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  border: 1.5px solid hsl(var(--border));
+  background: hsl(var(--card));
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.mode-card:hover {
+  border-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 4px 16px hsl(var(--primary) / 0.1);
+}
+.mode-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
 @media (max-width: 480px) {
+  .mode-selection-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .mode-card { padding: 0.875rem 0.75rem; }
+  .mode-card h4 { font-size: 0.82rem; }
+  .mode-card p { font-size: 0.72rem; display: none; }
+  .mode-card .btn { padding: 0.45rem 0.75rem; font-size: 0.78rem; }
+}
 
-  /* ── Container ── */
-  .container { padding: 10px 0.7rem; }
-  .main { padding-bottom: calc(68px + env(safe-area-inset-bottom)); }
-
-  /* ── Header ── */
-  .header-content { padding: 0.5rem 0; gap: 0.4rem; }
-  .logo-icon { width: 28px; height: 28px; }
-  .logo-text h1 { font-size: 1rem; font-weight: 800; }
-  .user-area { gap: 0.3rem; }
-
-  /* ── Ẩn top nav, dùng bottom nav ── */
-  .navigation { display: none !important; }
-  .user-area .btn-ghost[data-view-target="settings"] { display: none !important; }
-
-  /* ── Bottom Nav Bar ── */
-  .mobile-nav-bar {
-    display: flex !important;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: hsl(var(--card) / 0.97);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid hsl(var(--border) / 0.6);
-    z-index: 100;
-    padding: 0.25rem 0.25rem calc(0.25rem + env(safe-area-inset-bottom));
-    justify-content: space-around;
-    align-items: stretch;
-    gap: 0;
-    box-shadow: 0 -4px 20px hsl(0 0% 0% / 0.08);
+/* ── Review game responsive ── */
+@media (max-width: 480px) {
+  .review-game-container { padding: 0.5rem; }
+  .game-header {
+    display: flex; align-items: center;
+    gap: 0.5rem; padding: 0.5rem 0;
+    font-size: 0.82rem;
   }
-  .mobile-nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.18rem;
-    color: hsl(var(--muted-foreground));
-    font-size: 0.56rem;
-    font-weight: 600;
-    padding: 0.45rem 0.3rem 0.3rem;
-    border-radius: 0.65rem;
-    cursor: pointer;
-    background: none;
-    border: none;
-    font-family: inherit;
-    flex: 1;
-    transition: color 0.15s, background 0.15s;
-    text-decoration: none;
-    letter-spacing: 0.01em;
+  .question-card { padding: 1rem; border-radius: 1rem; }
+  #question-text { font-size: 1rem; line-height: 1.5; min-height: 60px; }
+  .quiz-options-container {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
   }
-  .mobile-nav-item svg { width: 20px; height: 20px; stroke-width: 1.8; transition: transform 0.15s, stroke-width 0.15s; }
-  .mobile-nav-item.active { color: hsl(var(--primary)); }
-  .mobile-nav-item.active svg { transform: translateY(-1px); stroke-width: 2.2; }
-  .mobile-nav-item:active { opacity: 0.6; transform: scale(0.95); }
-
-  /* ── FAB Chat: compact, không che nội dung ── */
-  .fab-chat {
-    position: fixed !important;
-    bottom: calc(72px + env(safe-area-inset-bottom)) !important;
-    right: 0.9rem !important;
-    width: 44px !important;
-    height: 44px !important;
-    padding: 10px !important;
-    border-radius: 50% !important;
-    box-shadow: 0 4px 14px hsl(214 90% 52% / 0.35) !important;
-    opacity: 0.9 !important;
-    z-index: 50 !important;
-  }
-  .fab-chat svg { width: 20px !important; height: 20px !important; }
-
-  /* ── Deck Selector ── */
-  .my-decks-card { padding: 0.65rem 0.85rem !important; border-radius: 1rem; }
-  #active-deck-label { font-size: 0.88rem; font-weight: 700; }
-  #deck-dropdown-panel { max-height: 55vh; overflow-y: auto; }
-  .deck-list { max-height: 180px !important; }
-
-  /* ── Word List Card: Collapsible ── */
-  .word-list-card { border-radius: 1rem; overflow: hidden; }
-  .word-list-header {
-    padding: 0.6rem 0.85rem !important;
-    cursor: pointer;
-    user-select: none;
-    display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-    background: hsl(var(--muted) / 0.4);
-  }
-  .word-list-header h3 { font-size: 0.85rem; font-weight: 700; }
-  .word-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-  .word-list-card.expanded .word-list { max-height: 300px; overflow-y: auto; }
-
-  /* ── Learning Area ── */
-  .learning-content { gap: 0.6rem; }
-
-  /* ── Controls Bar ── */
-  .controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 0.1rem;
-    gap: 0.4rem;
-  }
-  .control-buttons { gap: 0.4rem; }
-  .control-buttons .btn {
-    padding: 0.38rem 0.65rem;
-    font-size: 0.75rem;
-    border-radius: 0.65rem;
-    gap: 0.25rem;
-  }
-  .control-buttons .btn .icon-sm { width: 13px; height: 13px; }
-  .word-indicator { font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
-
-  /* ── Flashcard ── */
-  .flashcard-container { margin: 0; padding: 0; }
-  .flip-card {
-    width: 100% !important;
-    min-height: 195px !important;
-    border-radius: 1.25rem !important;
-    cursor: pointer;
-  }
-  .flash-card {
-    border-radius: 1.25rem !important;
-    padding: 1.25rem 1rem 1rem !important;
-    min-height: 195px !important;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.35rem;
-  }
-  .flash-word {
-    font-size: clamp(1.75rem, 9vw, 2.6rem) !important;
-    line-height: 1.1 !important;
-    word-break: break-word !important;
-    margin-bottom: 0.1rem;
-  }
-  .flash-ipa { font-size: 0.9rem !important; opacity: 0.75; }
-  .flash-meaning { font-size: 0.88rem !important; line-height: 1.5 !important; }
-  .example-box { margin-top: 0.4rem; }
-  .example-text { font-size: 0.78rem !important; line-height: 1.5 !important; }
-
-  /* Pronunciation button trên card */
-  .pronunciation-btn {
-    position: absolute !important;
-    top: 0.65rem !important;
-    right: 0.65rem !important;
-    width: 36px !important;
-    height: 36px !important;
-    border-radius: 50% !important;
-    padding: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: hsl(var(--background) / 0.7) !important;
-    backdrop-filter: blur(4px) !important;
-  }
-
-  /* ── Action Buttons ── */
-  .action-buttons {
-    display: flex !important;
-    gap: 0.6rem !important;
-    justify-content: center;
-    padding: 0.3rem 0 !important;
-  }
-  #learned-btn, #review-btn, #flip-back-btn {
-    padding: 0.6rem 1.1rem !important;
-    font-size: 0.85rem !important;
-    border-radius: 2rem !important;
-    flex: 1;
-    max-width: 140px;
-    font-weight: 700 !important;
-  }
-  #flip-back-btn { max-width: 100px; }
-
-  /* ── Navigation Controls ── */
-  .navigation-controls {
-    display: flex !important;
-    gap: 0.5rem !important;
-    justify-content: center;
-    padding: 0.1rem 0;
-  }
-  .navigation-controls .btn {
-    padding: 0.5rem 0.9rem !important;
-    font-size: 0.8rem !important;
-    min-height: 40px;
-    border-radius: 0.75rem !important;
-    font-weight: 700 !important;
-  }
-
-  /* ── Progress Dots ── */
-  .progress-dots { gap: 3px; max-height: 36px; overflow: hidden; }
-  .progress-dot { width: 6px !important; height: 6px !important; }
-
-  /* ── Review Setup ── */
-  .review-setup-card { padding: 1rem; border-radius: 1.1rem; }
-  .review-setup-card h2 { font-size: 1.2rem; }
-  .review-options { grid-template-columns: 1fr; gap: 0.6rem; }
-  .select-input { padding: 0.55rem 0.75rem; font-size: 0.88rem; border-radius: 0.75rem; }
-
-  /* ── Review Game ── */
-  .review-game-header { padding: 0.75rem; }
-  .question-card { padding: 1.25rem 1rem; border-radius: 1.1rem; }
-  .question-text { font-size: 1rem; line-height: 1.5; }
-  .quiz-options-grid { grid-template-columns: 1fr; gap: 0.5rem; }
   .btn-option {
-    padding: 0.75rem 1rem;
-    font-size: 0.88rem;
-    border-radius: 0.875rem;
-    text-align: left;
-    min-height: 50px;
+    padding: 0.65rem 0.75rem !important;
+    font-size: 0.82rem !important;
+    border-radius: 0.75rem !important;
+    min-height: 52px;
+    text-align: left !important;
+    line-height: 1.3 !important;
   }
-
-  /* ── Stats Grid ── */
-  .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 0.6rem; }
-  .stat-card { padding: 0.875rem; border-radius: 0.875rem; }
-  .stat-value { font-size: 1.5rem !important; }
-  .stat-label { font-size: 0.68rem !important; }
-
-  /* ── Settings ── */
-  .settings-section { padding: 1rem; border-radius: 1rem; margin-bottom: 0.75rem; }
-  .settings-section h3 { font-size: 0.95rem; margin-bottom: 0.75rem; }
-  .form-group { margin-bottom: 0.875rem; }
-  .form-label { font-size: 0.82rem; margin-bottom: 0.3rem; }
-  .form-control, .select-control, select.form-control {
-    padding: 0.6rem 0.875rem;
-    font-size: 0.88rem;
-    border-radius: 0.75rem;
-  }
-  .btn-save {
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 0.95rem;
-    border-radius: 0.875rem;
-    font-weight: 800;
-  }
-
-  /* ── Library Grid ── */
-  #library-grid { grid-template-columns: 1fr !important; gap: 0.75rem; }
-  .data-card { border-radius: 1rem; padding: 1rem; }
-
-  /* ── Modal: bottom sheet ── */
-  .modal {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    margin: 0 !important;
-    border-radius: 1.5rem 1.5rem 0 0 !important;
-    position: fixed !important;
-    bottom: 0 !important;
-    top: auto !important;
-    max-height: 92vh !important;
-    overflow-y: auto !important;
-  }
-  .modal-overlay { align-items: flex-end !important; }
-  .modal-header {
-    padding: 0.75rem 1rem 0.6rem !important;
-    position: sticky; top: 0;
-    background: hsl(var(--card));
-    z-index: 2;
-    border-radius: 1.5rem 1.5rem 0 0;
-  }
-  /* Pull indicator */
-  .modal-header::before {
-    content: '';
-    display: block;
-    width: 32px; height: 3px;
-    background: hsl(var(--border));
-    border-radius: 2px;
-    margin: 0 auto 0.6rem;
-  }
-  .modal-body { padding: 0.75rem 1rem 1.5rem !important; }
-  .modal-footer { padding: 0.75rem 1rem !important; padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)) !important; }
-
-  /* Chat modal */
-  .chat-modal-content {
-    max-width: 100vw !important;
-    height: 88vh !important;
-    border-radius: 1.5rem 1.5rem 0 0 !important;
-  }
-
-  /* ── Word Input Group (modal tạo bộ từ) ── */
-  .word-input-group { padding: 0.75rem; border-radius: 0.875rem; gap: 0.4rem; }
-  .word-input-field { gap: 0.3rem; }
-  .word-input-field input { padding: 0.5rem 0.7rem; font-size: 0.85rem; border-radius: 0.625rem; }
-  .add-word-btn { padding: 0.55rem; border-radius: 0.75rem; }
-  .remove-word-btn { width: 28px; height: 28px; font-size: 1rem; border-radius: 0.5rem; }
-
-  /* ── Deck items ── */
-  .deck-item { padding: 0.55rem 0.75rem; font-size: 0.82rem; border-radius: 0.6rem; }
-  .deck-action-btn { width: 26px; height: 26px; font-size: 0.7rem; }
-
-  /* ── Word items ── */
-  .word-item { padding: 0.55rem 0.75rem; }
-  .word-title { font-size: 0.85rem; font-weight: 700; }
-  .word-meaning { font-size: 0.73rem; }
-  .word-number { font-size: 0.68rem; min-width: 1.4rem; }
-
-  /* ── Review result redesign ── */
-  .result-content { padding: 1.75rem 1.25rem 2rem; border-radius: 1.25rem; }
-  .result-ring-wrap { width: 100px; height: 100px; margin-bottom: 1rem; }
-  .result-ring { width: 100px; height: 100px; }
-  .result-ring-pct { font-size: 1.3rem; }
-  .result-title { font-size: 1.2rem; }
-  .result-stat .stat-value { font-size: 2rem; }
-  .result-actions { flex-direction: column; gap: 0.6rem; }
-  .result-actions .btn { width: 100%; padding: 0.75rem; border-radius: 0.875rem; }
-
-  /* ── Progress view ── */
-  .progress-grid { grid-template-columns: 1fr !important; }
-  .page-title { font-size: 1.3rem; }
-  .page-subtitle { font-size: 0.8rem; }
-
-  /* ── Leaderboard mobile ── */
-  .leaderboard-table-wrap { display: none; }
-  .leaderboard-cards { display: flex !important; flex-direction: column; gap: 0.45rem; padding: 0.25rem 0; }
-  .lb-card {
-    display: flex; align-items: center; gap: 0.7rem;
-    padding: 0.7rem 0.875rem;
-    background: hsl(var(--card));
-    border-radius: 0.875rem;
-    border: 1px solid hsl(var(--border) / 0.5);
-  }
-  .lb-rank { font-size: 1.1rem; font-weight: 900; min-width: 1.8rem; text-align: center; flex-shrink: 0; }
-  .lb-name { font-weight: 700; font-size: 0.85rem; }
-  .lb-streak { font-size: 0.7rem; color: hsl(var(--muted-foreground)); }
-  .lb-xp { font-weight: 800; font-size: 0.88rem; color: hsl(var(--primary)); flex-shrink: 0; }
-
-  /* ── Notification panel ── */
-  .notif-panel { position: fixed !important; top: 56px !important; left: 0.5rem !important; right: 0.5rem !important; width: auto !important; }
-
-  /* ── Dashboard stats ── */
-  #dashboard-streak, #dashboard-xp { font-size: 0.78rem; }
-
-  /* ── Avatar ── */
-  .header-avatar { width: 30px !important; height: 30px !important; font-size: 0.65rem !important; }
-
-  /* ── Footer ── */
-  .footer { display: none; }
+  .fill-input-wrapper { flex-direction: column; }
+  #fill-input { font-size: 1rem; padding: 0.65rem; }
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   TOUCH TARGETS — minimum 44px
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-@media (hover: none) and (pointer: coarse) {
-  .btn, button:not(.mobile-nav-item):not(.pronunciation-btn) { min-height: 40px; }
-  .deck-item { min-height: 40px; display: flex; align-items: center; }
-  .word-item { min-height: 44px; display: flex; align-items: center; }
-  .nav-link { min-height: 36px; display: flex; align-items: center; justify-content: center; }
+/* ── Settings responsive ── */
+@media (max-width: 480px) {
+  .settings-grid { grid-template-columns: 1fr !important; }
 }
+
+/* ── Scrollbar thin ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 99px; }

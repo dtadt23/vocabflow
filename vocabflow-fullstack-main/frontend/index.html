@@ -28,7 +28,863 @@
       animation: vt-fade-in 0.22s ease-out forwards;
     }
   </style>
-  </head>
+  
+  <!-- ═══ GROUP CSS ═══ -->
+  <style id="group-styles">
+
+    /* ── Group-specific styles ──────────────────────────────── */
+    .group-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 1.5rem;
+      min-height: calc(100vh - 80px);
+      padding: 1.5rem 0;
+    }
+
+    /* ── Sidebar ────────────────────────────────────────────── */
+    .group-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .group-sidebar-header {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .group-sidebar-header h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+    }
+
+    .group-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .group-card {
+      background: hsl(var(--card));
+      border: 1.5px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 0.9rem 1.1rem;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      position: relative;
+    }
+
+    .group-card:hover {
+      border-color: hsl(var(--primary));
+      box-shadow: 0 2px 12px hsl(var(--primary) / 0.12);
+      transform: translateY(-1px);
+    }
+
+    .group-card.active {
+      border-color: hsl(var(--primary));
+      background: hsl(var(--primary-muted));
+    }
+
+    .group-card-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+      margin-bottom: 0.3rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .group-card-meta {
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .group-card-meta span { display: flex; align-items: center; gap: 0.3rem; }
+
+    .group-code-badge {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      letter-spacing: 1px;
+    }
+
+    .group-owner-badge {
+      position: absolute;
+      bottom: 0.6rem;
+      right: 0.6rem;
+      background: hsl(var(--warning));
+      color: white;
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    /* ── Main panel ─────────────────────────────────────────── */
+    .group-main {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* Tabs */
+    .group-tabs {
+      display: flex;
+      gap: 0.25rem;
+      background: hsl(var(--muted));
+      border-radius: var(--radius);
+      padding: 0.3rem;
+    }
+
+    .group-tab {
+      flex: 1;
+      padding: 0.55rem 1rem;
+      border: none;
+      border-radius: calc(var(--radius) - 2px);
+      background: transparent;
+      font-family: "Nunito", sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: hsl(var(--muted-foreground));
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .group-tab.active {
+      background: hsl(var(--card));
+      color: hsl(var(--foreground));
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    /* ── Panel cards ────────────────────────────────────────── */
+    .panel-card {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+
+    .panel-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ── Progress table ─────────────────────────────────────── */
+    .progress-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .progress-table th {
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: hsl(var(--muted-foreground));
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .progress-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid hsl(var(--border) / 0.5);
+      font-size: 0.875rem;
+      vertical-align: middle;
+    }
+
+    .progress-table tr:last-child td { border-bottom: none; }
+
+    .progress-table tr:hover td { background: hsl(var(--muted) / 0.5); }
+
+    .rank-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .rank-1 { background: hsl(45 100% 85%); color: hsl(35 91% 35%); }
+    .rank-2 { background: hsl(230 20% 88%); color: hsl(230 20% 35%); }
+    .rank-3 { background: hsl(25 80% 88%); color: hsl(25 80% 35%); }
+    .rank-n { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
+
+    .progress-bar-wrap {
+      background: hsl(var(--muted));
+      border-radius: 999px;
+      height: 8px;
+      width: 120px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary-soft)));
+      transition: width 0.4s ease;
+    }
+
+    .progress-bar-fill.good  { background: linear-gradient(90deg, hsl(var(--success)), hsl(var(--success-soft))); }
+    .progress-bar-fill.warn  { background: linear-gradient(90deg, hsl(var(--warning)), hsl(45 90% 65%)); }
+    .progress-bar-fill.poor  { background: linear-gradient(90deg, hsl(var(--danger-color)), hsl(4 80% 70%)); }
+
+    /* ── Deck grid ──────────────────────────────────────────── */
+    .deck-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+
+    .deck-item {
+      background: hsl(var(--card));
+      border: 1.5px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 1.1rem;
+      transition: all 0.18s;
+    }
+
+    .deck-item:hover {
+      border-color: hsl(var(--primary));
+      box-shadow: 0 4px 20px hsl(var(--primary) / 0.1);
+      transform: translateY(-2px);
+    }
+
+    .deck-item-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: hsl(var(--foreground));
+      margin-bottom: 0.35rem;
+    }
+
+    .deck-item-meta {
+      font-size: 0.78rem;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 0.9rem;
+    }
+
+    .deck-item-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* ── Members list ───────────────────────────────────────── */
+    .member-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .member-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: calc(var(--radius) - 2px);
+      background: hsl(var(--muted) / 0.4);
+      transition: background 0.15s;
+    }
+
+    .member-item:hover { background: hsl(var(--muted)); }
+
+    .member-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-soft)));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .member-info { flex: 1; min-width: 0; }
+
+    .member-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .member-role {
+      font-size: 0.72rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .member-role.owner { color: hsl(var(--warning)); font-weight: 700; }
+
+    .btn-kick {
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid hsl(var(--danger-color));
+      color: hsl(var(--danger-color));
+      background: transparent;
+      cursor: pointer;
+      font-family: "Nunito", sans-serif;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn-kick:hover { background: hsl(var(--danger-muted)); }
+
+    /* ── Empty state ────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: hsl(var(--muted-foreground));
+    }
+
+    .empty-state .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-state h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state p { font-size: 0.875rem; margin-bottom: 1.25rem; }
+
+    /* ── Welcome / no group ─────────────────────────────────── */
+    .welcome-panel {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+
+    .welcome-panel .welcome-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-soft)));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 2rem;
+    }
+
+    .welcome-panel h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: hsl(var(--foreground));
+      margin-bottom: 0.5rem;
+    }
+
+    .welcome-panel p {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.9rem;
+      max-width: 400px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+    }
+
+    .welcome-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── Code display ────────────────────────────────────────── */
+    .code-display {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: hsl(var(--primary-muted));
+      border: 1.5px solid hsl(var(--primary) / 0.3);
+      border-radius: var(--radius);
+      padding: 0.75rem 1.25rem;
+    }
+
+    .code-display .code-text {
+      font-size: 1.6rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      color: hsl(var(--primary));
+      font-variant-numeric: tabular-nums;
+    }
+
+    .btn-copy {
+      background: hsl(var(--primary));
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: "Nunito", sans-serif;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover { opacity: 0.85; }
+
+    /* ── Modal ──────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal-overlay.hidden { display: none; }
+
+    .modal-box {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) * 1.5);
+      padding: 2rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-header h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: hsl(var(--foreground));
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      color: hsl(var(--muted-foreground));
+      cursor: pointer;
+      padding: 0.2rem;
+      line-height: 1;
+    }
+    .modal-close:hover { color: hsl(var(--foreground)); }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+      margin-bottom: 0.4rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1.5px solid hsl(var(--border));
+      border-radius: var(--radius);
+      font-family: "Nunito", sans-serif;
+      font-size: 0.9rem;
+      background: hsl(var(--input));
+      color: hsl(var(--foreground));
+      transition: border-color 0.15s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: hsl(var(--primary));
+    }
+
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    .modal-footer {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+
+    /* ── Deck modal word inputs ─────────────────────────────── */
+    .word-input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 0.4rem;
+      margin-bottom: 0.4rem;
+      align-items: center;
+    }
+
+    .word-input-row input {
+      padding: 0.45rem 0.65rem;
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) - 2px);
+      font-size: 0.82rem;
+      background: hsl(var(--input));
+      color: hsl(var(--foreground));
+      font-family: "Nunito", sans-serif;
+    }
+
+    .btn-remove-word {
+      background: none;
+      border: none;
+      color: hsl(var(--danger-color));
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0 0.25rem;
+    }
+
+    .word-inputs-scroll {
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    /* ── Toast ──────────────────────────────────────────────── */
+    #toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .toast {
+      background: hsl(var(--foreground));
+      color: hsl(var(--background));
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      animation: toastIn 0.25s ease;
+    }
+
+    .toast.success { background: hsl(var(--success)); color: white; }
+    .toast.error   { background: hsl(var(--danger-color)); color: white; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Loading spinner ────────────────────────────────────── */
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid hsl(var(--border));
+      border-top-color: hsl(var(--primary));
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 2rem auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Info row ───────────────────────────────────────────── */
+    .info-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .info-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.82rem;
+      color: hsl(var(--muted-foreground));
+      background: hsl(var(--muted));
+      border-radius: 999px;
+      padding: 0.3rem 0.8rem;
+      font-weight: 600;
+    }
+
+    /* ── Danger zone ────────────────────────────────────────── */
+    .danger-zone {
+      border: 1.5px solid hsl(var(--danger-color) / 0.4);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-top: 1.5rem;
+    }
+
+    .danger-zone h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: hsl(var(--danger-color));
+      margin-bottom: 0.5rem;
+    }
+
+    .danger-zone p { font-size: 0.82rem; color: hsl(var(--muted-foreground)); margin-bottom: 0.75rem; }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .group-layout { grid-template-columns: 240px 1fr; gap: 1rem; }
+    }
+
+    @media (max-width: 768px) {
+      .group-layout {
+        grid-template-columns: 1fr;
+        padding: 0.75rem 0;
+        gap: 0;
+      }
+
+      /* Sidebar ẩn đi — thay bằng floating button + drawer */
+      .group-sidebar { display: none; }
+
+      /* Main panel full width */
+      .group-main { gap: 0.75rem; }
+
+      /* Group info header compact */
+      #group-info-card { padding: 1rem; }
+      #group-info-card h2 { font-size: 1.1rem !important; }
+
+      /* Tabs scrollable */
+      .group-tabs {
+        overflow-x: auto;
+        scrollbar-width: none;
+        flex-wrap: nowrap;
+        gap: 0.3rem;
+        padding-bottom: 2px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .group-tabs::-webkit-scrollbar { display: none; }
+      .group-tab { white-space: nowrap; flex-shrink: 0; }
+
+      /* Deck grid 1 col */
+      .deck-grid { grid-template-columns: 1fr !important; }
+
+      /* Word input 2 col */
+      .word-input-row { grid-template-columns: 1fr 1fr; }
+      .word-input-row input:nth-child(3) { grid-column: 1 / -1; }
+
+      /* Modal bottom sheet */
+      .modal-box {
+        position: fixed !important;
+        bottom: 0 !important; left: 0 !important; right: 0 !important;
+        top: auto !important;
+        max-width: 100vw !important;
+        width: 100vw !important;
+        border-radius: 1.25rem 1.25rem 0 0 !important;
+        max-height: 92vh !important;
+        margin: 0 !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      /* Word input 1 col */
+      .word-input-row { grid-template-columns: 1fr; }
+      .word-input-row input:nth-child(3) { grid-column: 1; }
+
+      /* Welcome panel compact */
+      .welcome-panel { padding: 2rem 1rem; }
+      .welcome-panel h2 { font-size: 1.3rem; }
+      .welcome-panel p { font-size: 0.85rem; }
+
+      /* Info chips wrap */
+      .info-row { flex-wrap: wrap; gap: 0.4rem; }
+      .info-chip { font-size: 0.72rem; padding: 0.2rem 0.6rem; }
+
+      /* Group detail header stack */
+      #group-info-card > div > div:first-child { width: 100%; }
+      #group-code-section { width: 100%; text-align: left !important; margin-top: 0.75rem; }
+
+      /* Panel card padding */
+      .panel-card { padding: 0.85rem; }
+
+      /* Deck item compact */
+      .deck-item { padding: 0.85rem; }
+      .deck-item-actions { flex-wrap: wrap; }
+      .deck-item-actions .btn { flex: 1; text-align: center; justify-content: center; font-size: 0.78rem; }
+
+      /* Member item compact */
+      .member-item { padding: 0.5rem 0.65rem; }
+      .member-name { font-size: 0.82rem; }
+
+      /* Danger zone */
+      .danger-zone { padding: 0.85rem; }
+      .danger-zone .btn { margin: 0.25rem 0 !important; width: 100%; }
+
+      /* Bottom padding for mobile nav */
+      .group-layout { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
+    }
+
+    /* ── Mobile Group Drawer (sidebar as drawer on mobile) ── */
+    .group-drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: hsl(0 0% 0% / 0.5);
+      z-index: 200;
+      backdrop-filter: blur(4px);
+    }
+    .group-drawer {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: min(300px, 85vw);
+      background: hsl(var(--card));
+      z-index: 201;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 4px 0 30px hsl(0 0% 0% / 0.2);
+    }
+    .group-drawer.open { transform: translateX(0); }
+    .group-drawer-overlay.open { display: block; }
+    .group-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.1rem 0.75rem;
+      border-bottom: 1px solid hsl(var(--border) / 0.5);
+      flex-shrink: 0;
+    }
+    .group-drawer-header h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+    }
+    .group-drawer-close {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: hsl(var(--muted));
+      color: hsl(var(--muted-foreground));
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .group-drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    /* FAB button để mở drawer */
+    .group-drawer-fab {
+      display: none;
+      position: fixed;
+      bottom: calc(80px + env(safe-area-inset-bottom));
+      left: 1rem;
+      z-index: 150;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, hsl(var(--primary)), hsl(258 80% 60%));
+      color: white;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 16px hsl(var(--primary) / 0.4);
+      align-items: center; justify-content: center;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .group-drawer-fab:active { transform: scale(0.92); }
+    @media (max-width: 768px) {
+      .group-drawer-fab { display: flex; }
+    }
+  
+
+    #group-header { display: none !important; }
+    html.in-iframe .main { padding-top: 0 !important; }
+    html.standalone #group-header { display: block !important; }
+    html.standalone .main { padding-top: var(--header-height, 70px); }
+  
+
+    @keyframes vt-fade-out {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-8px); }
+    }
+    @keyframes vt-fade-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    ::view-transition-old(root) {
+      animation: vt-fade-out 0.18s ease-in forwards;
+    }
+    ::view-transition-new(root) {
+      animation: vt-fade-in 0.22s ease-out forwards;
+    }
+  
+
+    /* ── Group mobile nav bar (6 items) ── */
+    .mobile-nav-bar-group {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: hsl(var(--card) / 0.96);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid hsl(var(--border) / 0.5);
+      z-index: 60;
+      display: flex;
+      justify-content: space-around; align-items: flex-end;
+      padding: 0.28rem 0.25rem calc(0.28rem + env(safe-area-inset-bottom));
+      gap: 0;
+    }
+    .mobile-nav-item-g {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0.18rem;
+      color: hsl(var(--muted-foreground));
+      font-size: 0.52rem; font-weight: 600;
+      text-decoration: none;
+      padding: 0.4rem 0.3rem 0.25rem;
+      border-radius: 0.6rem;
+      transition: color 0.18s;
+      cursor: pointer; background: none; border: none;
+      font-family: inherit;
+      flex: 1; max-width: 60px;
+      position: relative;
+    }
+    .mobile-nav-item-g svg { width: 20px; height: 20px; stroke-width: 1.8; transition: transform 0.18s; }
+    .mobile-nav-item-g.active { color: hsl(var(--primary)); font-weight: 700; }
+    .mobile-nav-item-g.active svg { transform: translateY(-1px); stroke-width: 2.2; }
+    .mobile-nav-item-g.active::after {
+      content: ''; position: absolute; bottom: 0.12rem; left: 50%;
+      transform: translateX(-50%);
+      width: 4px; height: 4px; border-radius: 50%;
+      background: hsl(var(--primary));
+    }
+    .mobile-nav-item-g:active { opacity: 0.7; }
+  
+  </style>
+</head>
   <body>
     <!-- Header -->
     <header class="header">
@@ -52,7 +908,7 @@
             <a href="#" class="nav-link" data-view-target="review"><span class="nav-short">Ôn Tập</span></a>
             <a href="#" class="nav-link" data-view-target="wordlist"><span class="nav-short">Thư Viện</span></a>
             <a href="#" class="nav-link" data-view-target="progress"><span class="nav-short">Xếp hạng</span></a>
-            <a href="./group.html" class="nav-link" id="group-nav-link"><span class="nav-short">Nhóm học</span></a>
+            <a href="#" class="nav-link" data-view-target="group" id="group-nav-link"><span class="nav-short">Nhóm học</span></a>
           </nav>
 
           <div class="user-area">
@@ -137,7 +993,7 @@
         </svg>
         Xếp Hạng
       </a>
-      <a href="./group.html" class="mobile-nav-item" id="mnav-group">
+      <a href="#" class="mobile-nav-item" id="mnav-group" data-view-target="group">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
@@ -442,7 +1298,7 @@
                     <option value="10">10 câu</option>
                     <option value="20">20 câu</option>
                     <option value="50">50 câu</option>
-                    <option value="all">Tất cả</option>
+                    <option value="all" selected>Tất cả từ trong bộ</option>
                   </select>
                 </div>
               </div>
@@ -469,6 +1325,16 @@
                   <h4>Điền Từ</h4>
                   <p>Gõ lại từ vựng dựa trên nghĩa gợi ý.</p>
                   <button class="btn btn-primary btn-full" id="start-fill-btn">Bắt Đầu</button>
+                </div>
+                <div class="mode-card" id="mode-en-vi">
+                  <div class="mode-icon">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/>
+                    </svg>
+                  </div>
+                  <h4>Từ → Nghĩa</h4>
+                  <p>Xem từ tiếng Anh, chọn nghĩa tiếng Việt đúng.</p>
+                  <button class="btn btn-primary btn-full" id="start-en-vi-btn">Bắt Đầu</button>
                 </div>
                 <!-- SRS MODE CARD -->
                 <div class="mode-card mode-card-srs" id="mode-srs">
@@ -807,6 +1673,990 @@
         </div>
 
         <!-- 6. Cài Đặt View -->
+        
+        <!-- ═══ GROUP VIEW ═══ -->
+        <div class="page-view hidden" id="group-view" data-group-init="false">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+            <h2 class="page-title">Nhóm Học</h2>
+          </div>
+          <div id="group-app" class="group-layout hidden">
+
+        <!-- ── Sidebar ── -->
+        <aside class="group-sidebar">
+          <div class="group-sidebar-header">
+            <h3>📚 Nhóm của tôi</h3>
+            <button class="btn btn-outline btn-sm" id="btn-create-group">
+              <i class="fa fa-plus"></i> Tạo
+            </button>
+          </div>
+
+          <button class="btn btn-outline" id="btn-join-group" style="width:100%;gap:0.5rem">
+            <i class="fa fa-sign-in-alt"></i> Tham gia nhóm bằng mã
+          </button>
+
+          <!-- Group list -->
+          <div class="group-list" id="group-list">
+            <div style="text-align:center;padding:2rem;color:hsl(var(--muted-foreground));font-size:0.85rem">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ── Main panel ── -->
+        <div class="group-main" id="group-main">
+
+          <!-- Welcome (no group selected) -->
+          <div class="welcome-panel" id="welcome-panel">
+            <div class="welcome-icon">👥</div>
+            <h2>Học Tập Theo Nhóm</h2>
+            <p>Tạo hoặc tham gia một nhóm học tập để cùng nhau học từ vựng, theo dõi tiến độ và tạo ra sự cạnh tranh lành mạnh!</p>
+            <div class="welcome-actions">
+              <button class="btn btn-primary" onclick="document.getElementById('btn-create-group').click()">
+                <i class="fa fa-plus"></i> Tạo nhóm mới
+              </button>
+              <button class="btn btn-outline" onclick="document.getElementById('btn-join-group').click()">
+                <i class="fa fa-sign-in-alt"></i> Tham gia bằng mã
+              </button>
+            </div>
+          </div>
+
+          <!-- Group detail panel (hidden until group selected) -->
+          <div id="group-detail" class="hidden">
+
+            <!-- Group info header -->
+            <div class="panel-card" id="group-info-card">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+                <div>
+                  <h2 id="detail-name" style="font-size:1.3rem;font-weight:800;color:hsl(var(--foreground));margin-bottom:0.4rem"></h2>
+                  <p id="detail-desc" style="color:hsl(var(--muted-foreground));font-size:0.875rem;margin-bottom:0.9rem"></p>
+                  <div class="info-row">
+                    <span class="info-chip"><i class="fa fa-users"></i> <span id="detail-members">0</span> thành viên</span>
+                    <span class="info-chip"><i class="fa fa-book"></i> <span id="detail-decks">0</span> bộ từ</span>
+                    <span class="info-chip"><i class="fa fa-calendar"></i> <span id="detail-created"></span></span>
+                  </div>
+                </div>
+                <div id="group-code-section" style="text-align:center;display:none">
+                  <div style="font-size:0.72rem;font-weight:700;color:hsl(var(--muted-foreground));margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.05em">Mã nhóm</div>
+                  <div class="code-display">
+                    <span class="code-text" id="detail-code"></span>
+                    <button class="btn-copy" onclick="copyCode()"><i class="fa fa-copy"></i> Sao chép</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="group-tabs">
+              <button class="group-tab active" data-tab="progress" onclick="switchTab('progress', this)">
+                📊 Tiến độ lớp
+              </button>
+              <button class="group-tab" data-tab="decks" onclick="switchTab('decks', this)">
+                📖 Bộ từ nhóm
+              </button>
+              <button class="group-tab" data-tab="members" onclick="switchTab('members', this)">
+                👥 Thành viên
+              </button>
+            </div>
+
+            <!-- ── Tab: Progress ─────────────────────────────── -->
+            <div id="tab-progress" class="panel-card">
+              <h3>📊 Tiến độ học tập của lớp</h3>
+              <div id="progress-content">
+                <div class="spinner"></div>
+              </div>
+            </div>
+
+            <!-- ── Tab: Decks ────────────────────────────────── -->
+            <div id="tab-decks" class="panel-card hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem">
+                <h3 style="margin-bottom:0">📖 Bộ từ nhóm</h3>
+                <button class="btn btn-primary btn-sm" id="btn-create-deck" style="display:none">
+                  <i class="fa fa-plus"></i> Thêm bộ từ
+                </button>
+              </div>
+              <div id="decks-content">
+                <div class="spinner"></div>
+              </div>
+            </div>
+
+            <!-- ── Tab: Members ──────────────────────────────── -->
+            <div id="tab-members" class="panel-card hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+                <h3 style="margin-bottom:0">👥 Thành viên nhóm</h3>
+              </div>
+              <div id="members-content">
+                <div class="spinner"></div>
+              </div>
+
+              <!-- Danger zone (owner only) -->
+              <div class="danger-zone" id="danger-zone" style="display:none">
+                <h4>⚠️ Vùng nguy hiểm</h4>
+                <p>Giải tán nhóm sẽ xóa toàn bộ bộ từ và tiến độ học tập của tất cả thành viên.</p>
+                <button class="btn btn-sm" style="border:1.5px solid hsl(var(--danger-color));color:hsl(var(--danger-color));background:transparent;cursor:pointer;font-family:Nunito,sans-serif;font-weight:700;padding:0.4rem 1rem;border-radius:var(--radius)"
+                  onclick="confirmDeleteGroup()">
+                  <i class="fa fa-trash"></i> Giải tán nhóm
+                </button>
+                <button class="btn btn-outline btn-sm" style="margin-left:0.5rem" onclick="confirmLeaveGroup()">
+                  Rời nhóm
+                </button>
+              </div>
+
+              <div id="leave-zone" style="margin-top:1.5rem;display:none">
+                <button class="btn btn-outline btn-sm" onclick="confirmLeaveGroup()">
+                  <i class="fa fa-sign-out-alt"></i> Rời nhóm
+                </button>
+              </div>
+            </div>
+
+          </div><!-- /group-detail -->
+        </div><!-- /group-main -->
+      </div>
+          <!-- Toast -->
+          <div id="toast-container"></div>
+          <!-- Modals -->
+          <div class="modal-overlay hidden" id="modal-create-group">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>🏫 Tạo nhóm học tập mới</h3>
+        <button class="modal-close" onclick="closeModal('modal-create-group')">✕</button>
+      </div>
+      <div class="form-group">
+        <label>Tên nhóm *</label>
+        <input type="text" id="input-group-name" placeholder="Ví dụ: Lớp Tiếng Anh 10A2" maxlength="60" />
+      </div>
+      <div class="form-group">
+        <label>Mô tả (tuỳ chọn)</label>
+        <textarea id="input-group-desc" placeholder="Mô tả ngắn về nhóm học..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-create-group')">Huỷ</button>
+        <button class="btn btn-primary" id="btn-submit-create-group" onclick="submitCreateGroup()">
+          <i class="fa fa-plus"></i> Tạo nhóm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Join Group Modal -->
+  <div class="modal-overlay hidden" id="modal-join-group">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>🔑 Tham gia nhóm</h3>
+        <button class="modal-close" onclick="closeModal('modal-join-group')">✕</button>
+      </div>
+      <div class="form-group">
+        <label>Nhập mã nhóm (6 ký tự)</label>
+        <input type="text" id="input-join-code" placeholder="Ví dụ: ABC123"
+          maxlength="6" style="text-transform:uppercase;font-size:1.2rem;font-weight:700;letter-spacing:0.1em;text-align:center"
+          oninput="this.value=this.value.toUpperCase()" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-join-group')">Huỷ</button>
+        <button class="btn btn-primary" onclick="submitJoinGroup()">
+          <i class="fa fa-sign-in-alt"></i> Tham gia
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create / Edit Deck Modal -->
+  <div class="modal-overlay hidden" id="modal-deck">
+    <div class="modal-box" style="max-width:680px;max-height:90vh;display:flex;flex-direction:column">
+      <div class="modal-header" style="flex-shrink:0">
+        <h3 id="modal-deck-title">➕ Tạo bộ từ nhóm</h3>
+        <button class="modal-close" onclick="closeModal('modal-deck')">✕</button>
+      </div>
+
+      <div style="overflow-y:auto;flex:1;padding:0 0.25rem">
+        <!-- Tên bộ từ -->
+        <div class="form-group" style="margin-bottom:1rem">
+          <label style="font-size:0.82rem;font-weight:700;margin-bottom:0.35rem;display:block">Tên bộ từ *</label>
+          <input type="text" id="input-deck-name" placeholder="Ví dụ: Unit 5 – Environment" maxlength="80"
+            style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid hsl(var(--border)/0.7);font-size:0.88rem;box-sizing:border-box;background:hsl(var(--card)/0.8)"/>
+        </div>
+
+        <!-- AI Section -->
+        <div style="background:hsl(var(--muted));border-radius:12px;padding:1rem;margin-bottom:1rem">
+          <div style="font-size:0.82rem;font-weight:700;margin-bottom:0.75rem;color:hsl(var(--foreground))">⚡ Phân Tích Tài Liệu (AI)</div>
+
+          <!-- Source selector -->
+          <div style="margin-bottom:0.6rem">
+            <select id="grp-ai-source" onchange="toggleGrpAiSource()"
+              style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid hsl(var(--border)/0.6);font-size:0.82rem;background:hsl(var(--card)/0.9);cursor:pointer">
+              <option value="text">📝 Văn bản (Text)</option>
+              <option value="file">📎 File (PDF, DOCX, TXT, Ảnh)</option>
+            </select>
+          </div>
+
+          <!-- Text input -->
+          <div id="grp-ai-text-area">
+            <textarea id="grp-ai-text" rows="4" placeholder="Dán đoạn văn tiếng Anh vào đây..."
+              style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid hsl(var(--border)/0.6);font-size:0.83rem;resize:vertical;box-sizing:border-box;background:hsl(var(--card)/0.8)"></textarea>
+          </div>
+
+          <!-- File input -->
+          <div id="grp-ai-file-area" style="display:none">
+            <label for="grp-ai-file" style="display:flex;align-items:center;gap:0.5rem;padding:9px 12px;border:1.5px dashed hsl(var(--border));border-radius:8px;cursor:pointer;font-size:0.83rem;color:hsl(var(--muted-foreground))">
+              <i class="fa fa-upload"></i>
+              <span id="grp-file-name">Chọn tệp (PDF, DOCX, TXT, PNG, JPG)</span>
+            </label>
+            <input type="file" id="grp-ai-file" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg" style="display:none"
+              onchange="document.getElementById('grp-file-name').textContent = this.files[0]?.name || 'Chọn tệp'"/>
+          </div>
+
+          <button id="grp-analyze-btn" onclick="runGrpAiAnalyze()"
+            style="width:100%;margin-top:0.65rem;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,hsl(214 90% 52%),hsl(225 85% 60%));color:#fff;font-weight:700;font-size:0.85rem;cursor:pointer;transition:opacity .15s">
+            <i class="fa fa-magic"></i> Phân Tích &amp; Trích Xuất (AI)
+          </button>
+        </div>
+
+        <!-- AI Preview table -->
+        <div id="grp-preview-wrap" style="display:none;margin-bottom:1rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+            <span style="font-size:0.82rem;font-weight:700">Kết quả AI <span id="grp-preview-count" style="background:hsl(var(--primary)/0.12);color:hsl(var(--primary));padding:1px 8px;border-radius:20px;font-size:0.75rem"></span></span>
+            <button onclick="addAllGrpPreview()" style="padding:5px 12px;border-radius:7px;border:1.5px solid hsl(var(--primary));background:transparent;color:hsl(var(--primary));font-size:0.78rem;font-weight:700;cursor:pointer">+ Thêm tất cả</button>
+          </div>
+          <div style="overflow-x:auto;border-radius:8px;border:1px solid hsl(var(--border)/0.5)">
+            <table style="width:100%;border-collapse:collapse;font-size:0.8rem">
+              <thead style="background:hsl(var(--muted))">
+                <tr>
+                  <th style="padding:6px 8px;text-align:left;font-weight:700"><input type="checkbox" id="grp-select-all" checked onchange="toggleAllGrpPreview(this.checked)"></th>
+                  <th style="padding:6px 8px;text-align:left;font-weight:700">Từ</th>
+                  <th style="padding:6px 8px;text-align:left;font-weight:700">IPA</th>
+                  <th style="padding:6px 8px;text-align:left;font-weight:700">Nghĩa</th>
+                </tr>
+              </thead>
+              <tbody id="grp-preview-body"></tbody>
+            </table>
+          </div>
+          <button onclick="addSelectedGrpPreview()"
+            style="margin-top:0.6rem;width:100%;padding:8px;border-radius:8px;border:none;background:hsl(var(--primary));color:#fff;font-weight:700;font-size:0.83rem;cursor:pointer">
+            ✅ Thêm từ đã chọn vào danh sách
+          </button>
+        </div>
+
+        <!-- Word list -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+          <span style="font-size:0.82rem;font-weight:700">Danh sách từ</span>
+          <span id="grp-word-count" style="font-size:0.75rem;background:hsl(var(--muted));padding:2px 8px;border-radius:20px;font-weight:700">0 từ</span>
+        </div>
+        <div id="deck-word-inputs" style="display:flex;flex-direction:column;gap:0.4rem"></div>
+        <button onclick="addWordRow()" style="width:100%;margin-top:0.5rem;padding:8px;border-radius:8px;border:1.5px dashed hsl(var(--border));background:transparent;font-size:0.82rem;cursor:pointer;color:hsl(var(--muted-foreground))">
+          + Thêm từ thủ công
+        </button>
+      </div>
+
+      <input type="hidden" id="editing-deck-id" value="" />
+      <div class="modal-footer" style="flex-shrink:0;padding-top:0.75rem;margin-top:0.5rem;border-top:1px solid hsl(var(--border)/0.4)">
+        <button class="btn btn-outline" onclick="closeModal('modal-deck')">Huỷ</button>
+        <button class="btn btn-primary" onclick="submitDeck()">
+          <i class="fa fa-save"></i> Lưu bộ từ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       JAVASCRIPT
+  ══════════════════════════════════════════════════════ -->
+  <script>
+  (() => {
+    'use strict';
+
+    // ── Config ────────────────────────────────────────────
+    const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://127.0.0.1:5000/api'
+      : 'https://backend-late-bird-6083.fly.dev/api';
+
+    // ── State ─────────────────────────────────────────────
+    let currentUser  = null;
+    let myGroups     = [];
+    let activeGroup  = null; // full group detail object
+    let activeTab    = 'progress';
+
+    // ── Auth helpers ──────────────────────────────────────
+    function getToken() {
+      return (currentUser && currentUser.token)
+        || localStorage.getItem('vocabflow_authToken') || '';
+    }
+
+    function authHeaders(extra = {}) {
+      return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json', ...extra };
+    }
+
+    async function apiFetch(path, opts = {}) {
+      const { headers: extraHeaders, ...restOpts } = opts;
+      const res = await fetch(API + path, {
+        headers: { ...authHeaders(), ...(extraHeaders || {}) },
+        ...restOpts,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.msg || `HTTP ${res.status}`);
+      return data;
+    }
+
+    // ── Toast ─────────────────────────────────────────────
+    function toast(msg, type = 'default') {
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.textContent = msg;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    // ── Modal ─────────────────────────────────────────────
+    function openModal(id) { const el=document.getElementById(id); if(el) el.classList.remove('hidden'); document.body.style.overflow='hidden'; }
+    function closeModal(id) { const el=document.getElementById(id); if(el) el.classList.add('hidden'); document.body.style.overflow=''; }
+    window.closeModal = closeModal;
+
+    // ── Init ──────────────────────────────────────────────
+    async function init() {
+      console.log('[VocabFlow Group] init() called');
+      const token = localStorage.getItem('vocabflow_authToken');
+      const userData = localStorage.getItem('vocabflow_currentUser');
+      console.log('[VocabFlow Group] token:', token ? 'EXISTS' : 'MISSING');
+      console.log('[VocabFlow Group] userData:', userData ? 'EXISTS' : 'MISSING');
+
+      if (!token || !userData) {
+        console.log('[VocabFlow Group] → showing not-logged-in');
+        document.getElementById('not-logged-in').classList.remove('hidden');
+        return;
+      }
+      try {
+        currentUser = JSON.parse(userData);
+        currentUser.token = token;
+        console.log('[VocabFlow Group] user:', currentUser.username);
+      } catch(e) {
+        console.error('[VocabFlow Group] parse error:', e);
+        document.getElementById('not-logged-in').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('group-app').classList.remove('hidden');
+
+      // Fetch avatar từ server (giống index.html)
+      try {
+        const meRes = await fetch(API + '/user/me', {
+          headers: { Authorization: `Bearer ${currentUser.token}` }
+        });
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          if (meData.avatar_url) {
+            const base = API.replace(/\/api$/, '');
+            currentUser.avatar_url = base + meData.avatar_url + '?t=' + Date.now();
+          }
+        }
+      } catch(e) {}
+
+      // Cập nhật avatar giống index.html
+      const avatarBtn  = document.getElementById('header-avatar-btn');
+      const avatarImg  = document.getElementById('header-avatar-img');
+      const avatarInit = document.getElementById('header-avatar-initials');
+      const loginBtn   = document.getElementById('login-prompt-btn');
+      if (avatarBtn)  avatarBtn.classList.remove('hidden');
+      if (loginBtn)   loginBtn.style.display = 'none';
+      if (currentUser.avatar_url && avatarImg) {
+        avatarImg.src = currentUser.avatar_url;
+        avatarImg.style.display = 'block';
+        if (avatarInit) avatarInit.style.display = 'none';
+      } else if (avatarInit) {
+        const name = currentUser.username || currentUser.email || '?';
+        avatarInit.textContent = name.charAt(0).toUpperCase();
+        avatarInit.style.display = '';
+      }
+
+      console.log('[VocabFlow Group] → calling loadMyGroups()');
+      loadMyGroups();
+    }
+
+    // ── Load groups ───────────────────────────────────────
+    async function loadMyGroups() {
+      document.getElementById('group-list').innerHTML = '<div style="text-align:center;padding:2rem"><div class="spinner"></div></div>';
+      try {
+        const data = await apiFetch('/groups');
+        myGroups = data.groups || [];
+        renderGroupList();
+      } catch (e) {
+        document.getElementById('group-list').innerHTML =
+          `<div style="text-align:center;padding:1.5rem;color:hsl(var(--danger-color));font-size:0.85rem">${e.message}</div>`;
+      }
+    }
+
+    function renderGroupList() {
+      const el = document.getElementById('group-list');
+      const drawerBody = document.getElementById('group-drawer-body');
+
+      const groupHTML = !myGroups.length
+        ? `<div class="empty-state" style="padding:1.5rem 0">
+            <div class="empty-icon">📭</div>
+            <p>Bạn chưa có nhóm nào.<br>Tạo hoặc tham gia nhóm để bắt đầu!</p>
+          </div>`
+        : myGroups.map(g => `
+          <div class="group-card ${activeGroup && activeGroup.id === g.id ? 'active' : ''}"
+            onclick="selectGroup('${g.id}')">
+            ${g.is_owner ? `<span class="group-code-badge">${g.code}</span>` : ''}
+            ${g.is_owner ? '<span class="group-owner-badge">Chủ nhóm</span>' : ''}
+            <div class="group-card-name">${escHtml(g.name)}</div>
+            <div class="group-card-meta">
+              <span><i class="fa fa-users"></i>${g.member_count} người</span>
+              <span><i class="fa fa-book"></i>${g.deck_count} bộ từ</span>
+            </div>
+          </div>
+        `).join('');
+
+      if (el) el.innerHTML = groupHTML;
+      // Sync drawer content
+      if (drawerBody) drawerBody.innerHTML = myGroups.length
+        ? myGroups.map(g => `
+          <div class="group-card ${activeGroup && activeGroup.id === g.id ? 'active' : ''}"
+            onclick="selectGroup('${g.id}');closeGroupDrawer()">
+            ${g.is_owner ? `<span class="group-code-badge">${g.code}</span>` : ''}
+            ${g.is_owner ? '<span class="group-owner-badge">Chủ nhóm</span>' : ''}
+            <div class="group-card-name">${escHtml(g.name)}</div>
+            <div class="group-card-meta">
+              <span><i class="fa fa-users"></i>${g.member_count} người</span>
+              <span><i class="fa fa-book"></i>${g.deck_count} bộ từ</span>
+            </div>
+          </div>`).join('')
+        : `<div style="text-align:center;padding:2rem 1rem;color:hsl(var(--muted-foreground));font-size:0.85rem">Chưa có nhóm nào</div>`;
+    }
+
+    // ── Navigate về index.html với đúng tab ───────────────
+    window.navTo = function(view) {
+      try { sessionStorage.setItem('vocabflow_view', view); } catch {}
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.sessionStorage.setItem('vocabflow_view', view);
+          window.opener.focus();
+          window.close();
+          return false;
+        } catch(e) {}
+      }
+      if (document.startViewTransition) {
+        document.startViewTransition(() => { window.location.href = './index.html'; });
+      } else {
+        window.location.href = './index.html';
+      }
+      return false;
+    };
+
+    // ── Drawer open/close ─────────────────────────────────
+    window.openGroupDrawer = function() {
+      document.getElementById('group-drawer').classList.add('open');
+      document.getElementById('group-drawer-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+    window.closeGroupDrawer = function() {
+      document.getElementById('group-drawer').classList.remove('open');
+      document.getElementById('group-drawer-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    };
+
+    // ── Select group ──────────────────────────────────────
+    window.selectGroup = async function(gid) {
+      document.getElementById('welcome-panel').classList.add('hidden');
+      document.getElementById('group-detail').classList.remove('hidden');
+      document.getElementById('progress-content').innerHTML = '<div class="spinner"></div>';
+      document.getElementById('decks-content').innerHTML = '<div class="spinner"></div>';
+      document.getElementById('members-content').innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const data = await apiFetch(`/groups/${gid}`);
+        activeGroup = data.group;
+        renderGroupHeader();
+        renderGroupList(); // re-render to show active
+        switchTab(activeTab, null);
+      } catch (e) { toast(e.message, 'error'); }
+    };
+
+    function renderGroupHeader() {
+      const g = activeGroup;
+      document.getElementById('detail-name').textContent    = g.name;
+      document.getElementById('detail-desc').textContent    = g.description || '';
+      document.getElementById('detail-code').textContent    = g.code;
+      document.getElementById('detail-members').textContent = g.member_count;
+      document.getElementById('detail-decks').textContent   = g.deck_count;
+      document.getElementById('detail-created').textContent = g.created_at;
+
+      // Owner-only controls
+      document.getElementById('btn-create-deck').style.display  = g.is_owner ? '' : 'none';
+      document.getElementById('danger-zone').style.display      = g.is_owner ? '' : 'none';
+      document.getElementById('leave-zone').style.display       = g.is_owner ? 'none' : '';
+      // Mã nhóm chỉ chủ nhóm thấy
+      document.getElementById('group-code-section').style.display = g.is_owner ? '' : 'none';
+    }
+
+    // ── Tabs ──────────────────────────────────────────────
+    window.switchTab = function(tab, btn) {
+      activeTab = tab;
+      ['progress','decks','members'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
+      });
+      document.querySelectorAll('.group-tab').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      else document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
+
+      if (tab === 'progress') loadProgress();
+      if (tab === 'decks')    renderDecks();
+      if (tab === 'members')  renderMembers();
+    };
+
+    // ── Progress ──────────────────────────────────────────
+    async function loadProgress() {
+      if (!activeGroup) return;
+      document.getElementById('progress-content').innerHTML = '<div class="spinner"></div>';
+      try {
+        const data = await apiFetch(`/groups/${activeGroup.id}/progress`);
+        renderProgress(data.progress, data.my_id);
+      } catch (e) {
+        document.getElementById('progress-content').innerHTML =
+          `<p style="color:hsl(var(--danger-color));font-size:0.85rem">${e.message}</p>`;
+      }
+    }
+
+    function renderProgress(progressList, myId) {
+      const el = document.getElementById('progress-content');
+      if (!progressList || !progressList.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><h4>Chưa có tiến độ</h4><p>Khi thành viên bắt đầu học bộ từ nhóm, tiến độ sẽ xuất hiện ở đây.</p></div>`;
+        return;
+      }
+
+      const rankIcon = i => {
+        if (i === 0) return `<span class="rank-badge rank-1">🥇</span>`;
+        if (i === 1) return `<span class="rank-badge rank-2">🥈</span>`;
+        if (i === 2) return `<span class="rank-badge rank-3">🥉</span>`;
+        return `<span class="rank-badge rank-n">${i+1}</span>`;
+      };
+
+      const barClass = pct => pct >= 70 ? 'good' : pct >= 40 ? 'warn' : 'poor';
+
+      const rows = progressList.map((p, i) => {
+        const isMe = p.user_id === myId;
+        const barW = p.overall_pct;
+        return `
+          <tr style="${isMe ? 'background:hsl(var(--primary-muted))' : ''}">
+            <td>${rankIcon(i)}</td>
+            <td>
+              <div style="font-weight:${isMe ? '800' : '600'};color:hsl(var(--foreground))">
+                ${escHtml(p.username)} ${isMe ? '<span style="font-size:0.7rem;background:hsl(var(--primary));color:white;padding:0.1rem 0.4rem;border-radius:4px;margin-left:0.3rem">Bạn</span>' : ''}
+              </div>
+              ${p.role === 'owner' ? '<div style="font-size:0.72rem;color:hsl(var(--warning));font-weight:700">Chủ nhóm</div>' : ''}
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:0.6rem">
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar-fill ${barClass(barW)}" style="width:${barW}%"></div>
+                </div>
+                <span style="font-size:0.82rem;font-weight:700;min-width:36px">${barW}%</span>
+              </div>
+            </td>
+            <td style="font-size:0.85rem;font-weight:600;color:hsl(var(--foreground))">${p.total_learned}/${p.total_words} từ</td>
+          </tr>
+        `;
+      }).join('');
+
+      el.innerHTML = `
+        <table class="progress-table">
+          <thead>
+            <tr>
+              <th style="width:42px">Hạng</th>
+              <th>Học viên</th>
+              <th>Tiến độ</th>
+              <th>Từ đã học</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    // ── Decks ─────────────────────────────────────────────
+    function renderDecks() {
+      if (!activeGroup) return;
+      const decks = activeGroup.decks || [];
+      const el = document.getElementById('decks-content');
+
+      if (!decks.length) {
+        el.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📖</div>
+            <h4>Chưa có bộ từ nào</h4>
+            <p>${activeGroup.is_owner ? 'Bấm "Thêm bộ từ" để tạo bộ từ đầu tiên cho nhóm.' : 'Chủ nhóm chưa thêm bộ từ nào.'}</p>
+            ${activeGroup.is_owner ? `<button class="btn btn-primary" onclick="openCreateDeck()"><i class="fa fa-plus"></i> Thêm bộ từ</button>` : ''}
+          </div>`;
+        return;
+      }
+
+      el.innerHTML = `<div class="deck-grid">${decks.map(d => `
+        <div class="deck-item">
+          <div class="deck-item-name">${escHtml(d.name)}</div>
+          <div class="deck-item-meta"><i class="fa fa-layer-group"></i> ${d.words.length} từ &nbsp;·&nbsp; ${d.created_at}</div>
+          <div class="deck-item-actions">
+            <button class="btn btn-primary btn-sm" onclick='studyDeck(${JSON.stringify(d)})'>
+              <i class="fa fa-play"></i> Học
+            </button>
+            ${activeGroup.is_owner ? `
+              <button class="btn btn-outline btn-sm" onclick='openEditDeck(${JSON.stringify(d)})'>
+                <i class="fa fa-edit"></i>
+              </button>
+              <button class="btn btn-sm" style="border:1px solid hsl(var(--danger-color));color:hsl(var(--danger-color));background:transparent;cursor:pointer;font-family:Nunito,sans-serif;font-size:0.78rem;font-weight:600;padding:0.3rem 0.6rem;border-radius:var(--radius)"
+                onclick="confirmDeleteDeck('${d.id}','${escHtml(d.name)}')">
+                <i class="fa fa-trash"></i>
+              </button>` : ''}
+          </div>
+        </div>
+      `).join('')}</div>`;
+    }
+
+    function renderMembers() {
+      if (!activeGroup) return;
+      const members = activeGroup.members || [];
+      const el = document.getElementById('members-content');
+      if (!members.length) {
+        el.innerHTML = '<p style="color:hsl(var(--muted-foreground));font-size:0.85rem">Chưa có thành viên.</p>';
+        return;
+      }
+      el.innerHTML = `<div class="member-list">${members.map(m => `
+        <div class="member-item">
+          <div class="member-avatar">${(m.username || '?')[0].toUpperCase()}</div>
+          <div class="member-info">
+            <div class="member-name">${escHtml(m.username)}</div>
+            <div class="member-role ${m.role === 'owner' ? 'owner' : ''}">${m.role === 'owner' ? '👑 Chủ nhóm' : 'Thành viên'} · Tham gia ${m.joined_at}</div>
+          </div>
+          ${activeGroup.is_owner && m.role !== 'owner' ?
+            `<button class="btn-kick" onclick="kickMember('${m.user_id}','${escHtml(m.username)}')">Xóa</button>` : ''}
+        </div>
+      `).join('')}</div>`;
+    }
+
+    // ── Study deck (redirect to main app) ────────────────────────
+    window.studyDeck = function(deck) {
+      // Lưu deck nhóm vào sessionStorage để index.html có thể tải
+      sessionStorage.setItem('study_group_deck', JSON.stringify(deck));
+      sessionStorage.setItem('study_group_id',   activeGroup.id);
+      window.location.href = './index.html?mode=group_study';
+    };
+
+    // ── Create group ──────────────────────────────────────
+    document.getElementById('btn-create-group').onclick = () => {
+      document.getElementById('input-group-name').value = '';
+      document.getElementById('input-group-desc').value = '';
+      openModal('modal-create-group');
+      setTimeout(() => document.getElementById('input-group-name').focus(), 100);
+    };
+
+    window.submitCreateGroup = async function() {
+      const name = document.getElementById('input-group-name').value.trim();
+      const desc = document.getElementById('input-group-desc').value.trim();
+      if (!name) { toast('Vui lòng nhập tên nhóm', 'error'); return; }
+      const btn = document.getElementById('btn-submit-create-group');
+      btn.disabled = true; btn.textContent = 'Đang tạo...';
+      try {
+        const data = await apiFetch('/groups', {
+          method: 'POST',
+          body: JSON.stringify({ name, description: desc })
+        });
+        toast(`Tạo nhóm thành công! Mã: ${data.group.code}`, 'success');
+        closeModal('modal-create-group');
+        await loadMyGroups();
+        selectGroup(data.group.id);
+      } catch (e) { toast(e.message, 'error'); }
+      finally { btn.disabled = false; btn.innerHTML = '<i class="fa fa-plus"></i> Tạo nhóm'; }
+    };
+
+    // ── Join group ────────────────────────────────────────
+    document.getElementById('btn-join-group').onclick = () => {
+      document.getElementById('input-join-code').value = '';
+      openModal('modal-join-group');
+      setTimeout(() => document.getElementById('input-join-code').focus(), 100);
+    };
+
+    window.submitJoinGroup = async function() {
+      const code = document.getElementById('input-join-code').value.trim().toUpperCase();
+      if (code.length < 4) { toast('Vui lòng nhập mã nhóm hợp lệ', 'error'); return; }
+      try {
+        const data = await apiFetch('/groups/join', {
+          method: 'POST',
+          body: JSON.stringify({ code })
+        });
+        toast(data.msg, 'success');
+        closeModal('modal-join-group');
+        await loadMyGroups();
+        selectGroup(data.group.id);
+      } catch (e) { toast(e.message, 'error'); }
+    };
+
+    // ── Copy code ─────────────────────────────────────────
+    window.copyCode = function() {
+      const code = document.getElementById('detail-code').textContent;
+      navigator.clipboard.writeText(code).then(() => toast(`Đã sao chép mã: ${code}`, 'success'));
+    };
+
+    // ── Create deck ───────────────────────────────────────
+    // ── AI Source toggle ─────────────────────────────────
+    window.toggleGrpAiSource = function() {
+      const v = document.getElementById('grp-ai-source').value;
+      document.getElementById('grp-ai-text-area').style.display  = v === 'text' ? '' : 'none';
+      document.getElementById('grp-ai-file-area').style.display  = v === 'file' ? '' : 'none';
+    };
+
+    // ── AI Analyze ────────────────────────────────────────
+    window.runGrpAiAnalyze = async function() {
+      const btn = document.getElementById('grp-analyze-btn');
+      btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang phân tích...';
+      try {
+        const source = document.getElementById('grp-ai-source').value;
+        let res;
+        if (source === 'text') {
+          const text = document.getElementById('grp-ai-text').value.trim();
+          if (!text) { toast('Vui lòng nhập văn bản', 'error'); return; }
+          res = await fetch(API + '/ai/analyze_text', {
+            method: 'POST', headers: authHeaders(),
+            body: JSON.stringify({ text })
+          });
+        } else {
+          const file = document.getElementById('grp-ai-file').files[0];
+          if (!file) { toast('Vui lòng chọn file', 'error'); return; }
+          const fd = new FormData(); fd.append('file', file);
+          const { 'Content-Type': _ct, ...hNoContentType } = authHeaders();
+          res = await fetch(API + '/ai/analyze_text', {
+            method: 'POST', headers: hNoContentType, body: fd
+          });
+        }
+        const data = await res.json();
+        if (!res.ok) { toast(data.msg || 'Lỗi AI', 'error'); return; }
+        const words = data.word_list || [];
+        if (!words.length) { toast('Không tìm thấy từ vựng nào', 'error'); return; }
+        renderGrpPreview(words);
+      } catch(e) { toast('Lỗi kết nối: ' + e.message, 'error'); }
+      finally { btn.disabled = false; btn.innerHTML = '<i class="fa fa-magic"></i> Phân Tích & Trích Xuất (AI)'; }
+    };
+
+    let grpPreviewWords = [];
+
+    function renderGrpPreview(words) {
+      grpPreviewWords = words;
+      const body = document.getElementById('grp-preview-body');
+      document.getElementById('grp-preview-count').textContent = `${words.length} từ`;
+      document.getElementById('grp-select-all').checked = true;
+      body.innerHTML = words.map((w, i) => `
+        <tr style="border-top:1px solid hsl(var(--border)/0.4)">
+          <td style="padding:5px 8px"><input type="checkbox" class="grp-word-cb" data-idx="${i}" checked></td>
+          <td style="padding:5px 8px;font-weight:700">${escHtml(w.word||'')}</td>
+          <td style="padding:5px 8px;font-size:0.78rem;color:hsl(var(--muted-foreground))">${escHtml(w.ipa||'')}</td>
+          <td style="padding:5px 8px">${escHtml(w.meaning||'')}</td>
+        </tr>`).join('');
+      document.getElementById('grp-preview-wrap').style.display = '';
+    }
+
+    window.toggleAllGrpPreview = function(checked) {
+      document.querySelectorAll('.grp-word-cb').forEach(cb => cb.checked = checked);
+    };
+
+    window.addSelectedGrpPreview = function() {
+      document.querySelectorAll('.grp-word-cb:checked').forEach(cb => {
+        const w = grpPreviewWords[parseInt(cb.dataset.idx)];
+        if (w) addWordRow(w);
+      });
+      document.getElementById('grp-preview-wrap').style.display = 'none';
+      updateGrpWordCount();
+      toast(`Đã thêm từ vào danh sách!`, 'success');
+    };
+
+    window.addAllGrpPreview = function() {
+      grpPreviewWords.forEach(w => addWordRow(w));
+      document.getElementById('grp-preview-wrap').style.display = 'none';
+      updateGrpWordCount();
+      toast(`Đã thêm tất cả ${grpPreviewWords.length} từ!`, 'success');
+    };
+
+    function updateGrpWordCount() {
+      const n = document.querySelectorAll('#deck-word-inputs .word-input-row').length;
+      const el = document.getElementById('grp-word-count');
+      if (el) el.textContent = `${n} từ`;
+    }
+
+    // ── Create deck ───────────────────────────────────────
+    window.openCreateDeck = function() {
+      document.getElementById('modal-deck-title').textContent = '➕ Tạo bộ từ nhóm';
+      document.getElementById('input-deck-name').value = '';
+      document.getElementById('editing-deck-id').value = '';
+      document.getElementById('deck-word-inputs').innerHTML = '';
+      document.getElementById('grp-ai-text').value = '';
+      document.getElementById('grp-preview-wrap').style.display = 'none';
+      updateGrpWordCount();
+      addWordRow(); addWordRow(); addWordRow();
+      updateGrpWordCount();
+      openModal('modal-deck');
+      setTimeout(() => document.getElementById('input-deck-name').focus(), 100);
+    };
+
+    document.getElementById('btn-create-deck').onclick = openCreateDeck;
+
+    window.openEditDeck = function(deck) {
+      document.getElementById('modal-deck-title').textContent = '✏️ Chỉnh sửa bộ từ';
+      document.getElementById('input-deck-name').value = deck.name;
+      document.getElementById('editing-deck-id').value = deck.id;
+      document.getElementById('deck-word-inputs').innerHTML = '';
+      document.getElementById('grp-ai-text').value = '';
+      document.getElementById('grp-preview-wrap').style.display = 'none';
+      (deck.words || []).forEach(w => addWordRow(w));
+      if (!deck.words || !deck.words.length) addWordRow();
+      updateGrpWordCount();
+      openModal('modal-deck');
+    };
+
+    window.addWordRow = function(w = null) {
+      const row = document.createElement('div');
+      row.className = 'word-input-row';
+      row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.4rem;align-items:center';
+      row.innerHTML = `
+        <input type="text" placeholder="Từ (VD: Serendipity)" value="${escHtml(w?.word || '')}" data-field="word"
+          style="padding:6px 9px;border-radius:7px;border:1px solid hsl(var(--border)/0.6);font-size:0.82rem;background:hsl(var(--card)/0.8)"
+          oninput="updateGrpWordCount()"/>
+        <input type="text" placeholder="IPA (/ˌsɛr.../) " value="${escHtml(w?.ipa || '')}" data-field="ipa"
+          style="padding:6px 9px;border-radius:7px;border:1px solid hsl(var(--border)/0.6);font-size:0.82rem;background:hsl(var(--card)/0.8)"/>
+        <input type="text" placeholder="Nghĩa tiếng Việt" value="${escHtml(w?.meaning || '')}" data-field="meaning"
+          style="padding:6px 9px;border-radius:7px;border:1px solid hsl(var(--border)/0.6);font-size:0.82rem;background:hsl(var(--card)/0.8)"/>
+        <button onclick="this.closest('.word-input-row').remove();updateGrpWordCount()"
+          style="width:26px;height:26px;border-radius:50%;border:none;background:hsl(var(--danger-color,0 84% 60%)/0.12);color:hsl(var(--danger-color,0 84% 60%));font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0"
+          title="Xóa">✕</button>
+      `;
+      document.getElementById('deck-word-inputs').appendChild(row);
+      updateGrpWordCount();
+    };
+
+    window.submitDeck = async function() {
+      if (!activeGroup) return;
+      const name = document.getElementById('input-deck-name').value.trim();
+      const did  = document.getElementById('editing-deck-id').value;
+      if (!name) { toast('Vui lòng nhập tên bộ từ', 'error'); return; }
+
+      const rows  = document.querySelectorAll('#deck-word-inputs .word-input-row');
+      const words = [];
+      rows.forEach((row, idx) => {
+        const word    = row.querySelector('[data-field="word"]').value.trim();
+        const ipa     = row.querySelector('[data-field="ipa"]').value.trim();
+        const meaning = row.querySelector('[data-field="meaning"]').value.trim();
+        if (word) words.push({ id: `w-${Date.now()}-${idx}`, word, ipa, meaning });
+      });
+      if (!words.length) { toast('Vui lòng thêm ít nhất 1 từ', 'error'); return; }
+
+      const btn = document.querySelector('#modal-deck .btn-primary');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang lưu...'; }
+      try {
+        if (did) {
+          await apiFetch(`/groups/${activeGroup.id}/decks/${did}`, {
+            method: 'PUT', body: JSON.stringify({ name, words })
+          });
+          toast('Đã cập nhật bộ từ!', 'success');
+        } else {
+          await apiFetch(`/groups/${activeGroup.id}/decks`, {
+            method: 'POST', body: JSON.stringify({ name, words })
+          });
+          toast(`Đã tạo bộ từ với ${words.length} từ!`, 'success');
+        }
+        closeModal('modal-deck');
+        const data = await apiFetch(`/groups/${activeGroup.id}`);
+        activeGroup = data.group;
+        renderGroupHeader();
+        renderDecks();
+      } catch (e) { toast(e.message, 'error'); }
+      finally { if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa fa-save"></i> Lưu bộ từ'; } }
+    };
+
+    window.confirmDeleteDeck = function(did, dname) {
+      if (!confirm(`Xóa bộ từ "${dname}" khỏi nhóm? Thao tác này không thể hoàn tác.`)) return;
+      apiFetch(`/groups/${activeGroup.id}/decks/${did}`, { method: 'DELETE' })
+        .then(async () => {
+          toast('Đã xóa bộ từ', 'success');
+          const data = await apiFetch(`/groups/${activeGroup.id}`);
+          activeGroup = data.group;
+          renderGroupHeader();
+          renderDecks();
+        })
+        .catch(e => toast(e.message, 'error'));
+    };
+
+    // ── Kick member ───────────────────────────────────────
+    window.kickMember = function(uid, uname) {
+      if (!confirm(`Xóa "${uname}" khỏi nhóm?`)) return;
+      apiFetch(`/groups/${activeGroup.id}/members/${uid}`, { method: 'DELETE' })
+        .then(async () => {
+          toast(`Đã xóa ${uname} khỏi nhóm`, 'success');
+          const data = await apiFetch(`/groups/${activeGroup.id}`);
+          activeGroup = data.group;
+          renderGroupHeader();
+          renderMembers();
+        })
+        .catch(e => toast(e.message, 'error'));
+    };
+
+    // ── Delete group ──────────────────────────────────────
+    window.confirmDeleteGroup = function() {
+      if (!confirm(`Giải tán nhóm "${activeGroup.name}"?\nToàn bộ bộ từ và tiến độ học sẽ bị xóa vĩnh viễn.`)) return;
+      apiFetch(`/groups/${activeGroup.id}`, { method: 'DELETE' })
+        .then(async () => {
+          toast('Đã giải tán nhóm', 'success');
+          activeGroup = null;
+          document.getElementById('welcome-panel').classList.remove('hidden');
+          document.getElementById('group-detail').classList.add('hidden');
+          await loadMyGroups();
+        })
+        .catch(e => toast(e.message, 'error'));
+    };
+
+    // ── Leave group ───────────────────────────────────────
+    window.confirmLeaveGroup = function() {
+      if (!confirm(`Rời khỏi nhóm "${activeGroup.name}"?`)) return;
+      apiFetch(`/groups/${activeGroup.id}/leave`, { method: 'POST' })
+        .then(async () => {
+          toast('Đã rời nhóm', 'success');
+          activeGroup = null;
+          document.getElementById('welcome-panel').classList.remove('hidden');
+          document.getElementById('group-detail').classList.add('hidden');
+          await loadMyGroups();
+        })
+        .catch(e => toast(e.message, 'error'));
+    };
+
+    // ── Utils ─────────────────────────────────────────────
+    function escHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Boot ──────────────────────────────────────────────
+    init();
+
+  })();
+  </script>
+
+  <!-- Maintenance Overlay -->
+  <div id="maintenance-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:hsl(220 20% 6%);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;color:white">
+    <div style="font-size:4rem;margin-bottom:1.5rem">🔧</div>
+    <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:0.75rem">Hệ thống đang bảo trì</h1>
+    <p id="group-maintenance-msg" style="font-size:1rem;opacity:0.75;max-width:440px;line-height:1.7;margin-bottom:1rem">Vui lòng quay lại sau.</p>
+    <p id="group-maintenance-eta" style="font-size:0.85rem;opacity:0.5"></p>
+  </div>
+  <script>
+    // Check maintenance on group.html load
+    (async function() {
+      const BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://127.0.0.1:5000/api' : 'https://backend-late-bird-6083.fly.dev/api';
+      try {
+        const res = await fetch(BASE + '/test_db').catch(() => null);
+        if (res && res.status === 503) {
+          const data = await res.json().catch(() => ({}));
+          if (data.maintenance) {
+            const msg = data.msg || 'Hệ thống đang bảo trì.';
+            const eta = data.eta || '';
+            const params = new URLSearchParams({ msg, eta });
+            window.location.href = '/maintenance.html?' + params.toString();
+          }
+        }
+      } catch {}
+    })();
+  </script>
+        </div>
         <div class="page-view hidden" id="settings-view">
           <h2 class="page-title">Cài Đặt Tài Khoản & Ứng Dụng</h2>
           <p class="page-subtitle">Quản lý thông tin cá nhân và giao diện.</p>
@@ -888,7 +2738,7 @@
         </div>
 
       </div>
-      <button class="fab-chat" id="open-chat-btn" title="Chat với AI">
+      <button class="fab-chat" id="open-chat-btn" title="Kéo để di chuyển | Click để chat">
         <svg width="30" height="30" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="10" y="18" width="40" height="28" rx="9" fill="white" fill-opacity="0.25"/>
           <rect x="10" y="18" width="40" height="28" rx="9" stroke="white" stroke-width="2.5"/>
