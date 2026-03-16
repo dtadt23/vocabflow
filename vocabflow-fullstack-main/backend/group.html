@@ -862,6 +862,68 @@
       background: hsl(var(--primary));
     }
     .mobile-nav-item-g:active { opacity: 0.7; }
+
+    /* ── Group page mobile redesign ── */
+    @media (max-width: 480px) {
+      /* Layout */
+      .group-layout { flex-direction: column !important; gap: 0 !important; }
+      .group-sidebar {
+        width: 100% !important; min-width: unset !important;
+        border-right: none !important;
+        border-bottom: 1px solid hsl(var(--border) / 0.5);
+        max-height: 52px;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .group-sidebar.expanded { max-height: 70vh; overflow-y: auto; }
+      .group-main { padding: 0.75rem !important; }
+
+      /* Sidebar header toggle */
+      .sidebar-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0.75rem 1rem !important;
+        cursor: pointer; user-select: none;
+        position: sticky; top: 0; background: hsl(var(--card)); z-index: 2;
+      }
+
+      /* Group cards */
+      .group-card {
+        border-radius: 0.875rem !important;
+        padding: 0.875rem !important;
+      }
+
+      /* Deck list */
+      .deck-list-item { padding: 0.65rem 0.875rem !important; border-radius: 0.75rem !important; }
+
+      /* Members list */
+      .member-item { padding: 0.6rem 0.875rem !important; }
+      .member-avatar { width: 32px !important; height: 32px !important; font-size: 0.7rem !important; }
+
+      /* Modals */
+      .modal { border-radius: 1.5rem 1.5rem 0 0 !important; }
+
+      /* Back button */
+      #btn-close-tab {
+        display: flex !important;
+        padding: 0.35rem 0.7rem !important;
+        font-size: 0.75rem !important;
+        border-radius: 999px !important;
+      }
+
+      /* Stats chips */
+      .info-chip { font-size: 0.72rem !important; padding: 0.2rem 0.5rem !important; }
+
+      /* Body padding for bottom nav */
+      body { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
+
+      /* Toast */
+      .toast { bottom: calc(70px + env(safe-area-inset-bottom)) !important; font-size: 0.82rem !important; }
+
+      /* Header compact */
+      .header-content { gap: 0.4rem !important; }
+      .logo-text p { display: none !important; }
+      .navigation { display: none !important; }
+    }
   </style>
 </head>
 <body>
