@@ -3817,7 +3817,9 @@ function showMaintenanceOverlay(data) {
       return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // ── KHÔNG tự boot — chờ initGroupView() được gọi từ switchView ──
+    // Expose ra window để initGroupView có thể gọi
+    window._groupInit = init;
+    window._groupLoadMyGroups = loadMyGroups;
 
   })();
 
@@ -3825,12 +3827,9 @@ function showMaintenanceOverlay(data) {
   window.initGroupView = async function() {
     if (!groupInitialized) {
       groupInitialized = true;
-      await init();
+      if (window._groupInit) await window._groupInit();
     } else {
-      // Đã init rồi, chỉ reload groups
-      if (typeof loadMyGroups === 'function') {
-        loadMyGroups();
-      }
+      if (window._groupLoadMyGroups) window._groupLoadMyGroups();
     }
   };
 })();

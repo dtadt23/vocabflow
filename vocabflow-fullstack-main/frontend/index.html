@@ -1336,24 +1336,7 @@
                   <p>Xem từ tiếng Anh, chọn nghĩa tiếng Việt đúng.</p>
                   <button class="btn btn-primary btn-full" id="start-en-vi-btn">Bắt Đầu</button>
                 </div>
-                <!-- SRS MODE CARD -->
-                <div class="mode-card mode-card-srs" id="mode-srs">
-                  <div class="mode-icon mode-icon-srs">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/><polyline points="21 3 21 9 15 9"/>
-                    </svg>
-                  </div>
-                  <h4>Ôn Lặp Lại Ngắt Quãng</h4>
-                  <p>Hệ thống nhắc ôn đúng lúc — không bao giờ quên từ đã học.</p>
-                  <div class="srs-stats-preview">
-                    <span id="srs-due-count-badge">0 từ đến hạn</span>
-                    <span id="srs-today-count-badge">0 từ hôm nay</span>
-                  </div>
-                  <div style="display:flex;gap:8px;margin-top:auto">
-                    <button class="btn btn-primary" style="flex:1" id="start-srs-due-btn">Ôn Đến Hạn</button>
-                    <button class="btn btn-outline" style="flex:1" id="start-srs-today-btn">Từ Hôm Nay</button>
-                  </div>
-                </div>
+                
 
                 <!-- PRONUNCIATION MODE CARD -->
                 <div class="mode-card mode-card-pronun" id="mode-pronun">
@@ -2755,76 +2738,7 @@
       </button>
 
       <!-- ====== SRS GAME CONTAINER ====== -->
-      <div class="srs-overlay hidden" id="srs-overlay">
-        <div class="srs-game-modal">
-          <!-- SRS Header -->
-          <div class="srs-header">
-            <div class="srs-header-info">
-              <span class="srs-label" id="srs-mode-label">Ôn Lặp Lại Ngắt Quãng</span>
-              <div class="srs-progress-row">
-                <span id="srs-current-num">1</span><span style="opacity:.5">/</span><span id="srs-total-num">10</span>
-                <div class="srs-progress-bar-wrap"><div class="srs-progress-bar-fill" id="srs-progress-fill"></div></div>
-              </div>
-            </div>
-            <button class="srs-close-btn" id="srs-close-btn" title="Thoát">✕</button>
-          </div>
-
-          <!-- SRS Card Area -->
-          <div class="srs-card-area" id="srs-card-area">
-            <div class="srs-card" id="srs-card">
-              <div class="srs-card-front" id="srs-card-front">
-                <p class="srs-card-label">Nghĩa của từ</p>
-                <h2 class="srs-meaning" id="srs-meaning-display"></h2>
-                <p class="srs-example-hint" id="srs-example-hint"></p>
-                <button class="srs-flip-btn" id="srs-show-btn">
-                  <i class="fa-solid fa-eye"></i> Xem từ
-                </button>
-              </div>
-              <div class="srs-card-back hidden" id="srs-card-back">
-                <p class="srs-card-label" style="color:hsl(0 0% 100%/0.6)">Từ vựng</p>
-                <h2 class="srs-word-display" id="srs-word-display"></h2>
-                <p class="srs-ipa-display" id="srs-ipa-display"></p>
-                <p class="srs-example-en" id="srs-example-back"></p>
-                <div class="srs-rating-row">
-                  <button class="srs-rating-btn srs-again" id="srs-btn-again">
-                    <span class="srs-rating-icon">😰</span>
-                    <span class="srs-rating-label">Quên rồi</span>
-                    <span class="srs-rating-interval">+1 ngày</span>
-                  </button>
-                  <button class="srs-rating-btn srs-hard" id="srs-btn-hard">
-                    <span class="srs-rating-icon">😬</span>
-                    <span class="srs-rating-label">Khó</span>
-                    <span class="srs-rating-interval" id="srs-int-hard">+2 ngày</span>
-                  </button>
-                  <button class="srs-rating-btn srs-good" id="srs-btn-good">
-                    <span class="srs-rating-icon">😊</span>
-                    <span class="srs-rating-label">Nhớ được</span>
-                    <span class="srs-rating-interval" id="srs-int-good">+4 ngày</span>
-                  </button>
-                  <button class="srs-rating-btn srs-easy" id="srs-btn-easy">
-                    <span class="srs-rating-icon">🎉</span>
-                    <span class="srs-rating-label">Dễ</span>
-                    <span class="srs-rating-interval" id="srs-int-easy">+7 ngày</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- SRS Result -->
-          <div class="srs-result hidden" id="srs-result">
-            <div class="srs-result-emoji">🧠</div>
-            <h3>Hoàn Thành Phiên Ôn Tập!</h3>
-            <div class="srs-result-stats">
-              <div class="srs-result-item"><span id="srs-res-again">0</span><small>Quên</small></div>
-              <div class="srs-result-item good"><span id="srs-res-good">0</span><small>Nhớ được</small></div>
-              <div class="srs-result-item easy"><span id="srs-res-easy">0</span><small>Dễ</small></div>
-            </div>
-            <p class="srs-result-msg" id="srs-result-msg"></p>
-            <button class="btn btn-primary" id="srs-finish-btn" style="margin-top:1.5rem;width:100%">Xong</button>
-          </div>
-        </div>
-      </div>
+      
     </main>
 
     <!-- FOOTER — Premium Dark Blue -->
@@ -3353,12 +3267,8 @@
       srsIdx = 0;
       srsStats = { again: 0, good: 0, easy: 0 };
 
-      const label = document.getElementById('srs-mode-label');
       if (label) label.textContent = mode === 'due' ? '⏰ Ôn Lặp Lại Ngắt Quãng' : '📅 Từ Học Hôm Nay';
 
-      document.getElementById('srs-overlay').classList.remove('hidden');
-      document.getElementById('srs-result').classList.add('hidden');
-      document.getElementById('srs-card-area').classList.remove('hidden');
       srsShowCard();
     }
 
@@ -3412,14 +3322,11 @@
     }
 
     function srsShowResult() {
-      document.getElementById('srs-card-area').classList.add('hidden');
-      document.getElementById('srs-result').classList.remove('hidden');
       document.getElementById('srs-res-again').textContent = srsStats.again;
       document.getElementById('srs-res-good').textContent = srsStats.good;
       document.getElementById('srs-res-easy').textContent = srsStats.easy;
       const total = srsQueue.length;
       const pct = total > 0 ? Math.round(((srsStats.good + srsStats.easy) / total) * 100) : 0;
-      document.getElementById('srs-result-msg').textContent =
         pct >= 80 ? '🔥 Tuyệt vời! Bộ nhớ của bạn rất tốt hôm nay.' :
         pct >= 50 ? '💪 Tiến bộ tốt! Tiếp tục ôn tập nhé.' :
         '🌱 Đừng nản lòng — lặp lại nhiều hơn sẽ nhớ thôi!';
@@ -3439,11 +3346,9 @@
     document.getElementById('srs-btn-good')?.addEventListener('click',  () => srsRate(2));
     document.getElementById('srs-btn-easy')?.addEventListener('click',  () => srsRate(3));
     document.getElementById('srs-close-btn')?.addEventListener('click', () => {
-      document.getElementById('srs-overlay').classList.add('hidden');
       updateSrsBadges();
     });
     document.getElementById('srs-finish-btn')?.addEventListener('click', () => {
-      document.getElementById('srs-overlay').classList.add('hidden');
       updateSrsBadges();
     });
 
