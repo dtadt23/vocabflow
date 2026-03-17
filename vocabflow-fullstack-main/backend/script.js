@@ -581,15 +581,13 @@ function showLearningContent() {
 // =========================================================
 function switchView(targetViewId) {
   if (reviewTimerInterval) clearInterval(reviewTimerInterval);
-  // "group" là external page — không xử lý, fallback về dashboard
-  if (targetViewId === "group") targetViewId = "dashboard";
   document.querySelectorAll(".main-grid, .page-view").forEach((v) => v.classList.add("hidden"));
   const targetElement = document.getElementById(targetViewId + "-view");
   if (targetViewId === "dashboard") elements.dashboardView.classList.remove("hidden");
   else if (targetElement) targetElement.classList.remove("hidden");
   else { elements.dashboardView.classList.remove("hidden"); targetViewId = "dashboard"; }
   currentView = targetViewId;
-  try { if (targetViewId !== "group") sessionStorage.setItem('vocabflow_view', targetViewId); } catch {}
+  try { sessionStorage.setItem('vocabflow_view', targetViewId); } catch {}
   elements.navLinks.forEach((link) => {
     link.classList.remove("active");
     if (link.getAttribute("data-view-target") === targetViewId) link.classList.add("active");
@@ -3825,10 +3823,17 @@ function showMaintenanceOverlay(data) {
 
   // Được gọi khi user bấm tab "Nhóm học"
   window.initGroupView = async function() {
+    // Đảm bảo group-app visible
+    const groupApp = document.getElementById('group-app');
+    const notLogged = document.getElementById('not-logged-in');
+    
     if (!groupInitialized) {
       groupInitialized = true;
       if (window._groupInit) await window._groupInit();
     } else {
+      // Đã init - show group-app và reload
+      if (groupApp) groupApp.classList.remove('hidden');
+      if (notLogged) notLogged.classList.add('hidden');
       if (window._groupLoadMyGroups) window._groupLoadMyGroups();
     }
   };
