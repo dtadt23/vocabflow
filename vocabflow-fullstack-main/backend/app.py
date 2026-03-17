@@ -16,6 +16,10 @@ import re
 import asyncio
 from gtts import gTTS
 import io
+try:
+    import edge_tts
+except ImportError:
+    edge_tts = None
 import tempfile 
 from io import BytesIO
 from docx import Document
@@ -1472,33 +1476,43 @@ def get_audio():
     if not text:
         return jsonify({"msg": "Missing text"}), 400
 
-    # Map voice ID sang gTTS tld (accent)
-    # en-US-* → com, en-GB-* → co.uk, en-AU-* → com.au, en-IN-* → co.in
-    tld_map = {
-        'en-US': 'com',
-        'en-GB': 'co.uk',
-        'en-AU': 'com.au',
-        'en-IN': 'co.in',
-    }
-    tld = 'com'  # default US
-    for prefix, t in tld_map.items():
-        if voice.startswith(prefix):
-            tld = t
-            break
-
     safe_text = re.sub(r'[^a-zA-Z0-9]', '_', text.strip()[:50])
-    filename = f"gtts_{tld}_{safe_text}.mp3"
-    filepath = os.path.join(AUDIO_CACHE_DIR, filename)
 
-    if not os.path.exists(filepath):
+    # Thử edge_tts trước (có đầy đủ giọng nam/nữ)
+    filename_edge = f"edge_{voice}_{safe_text}.mp3"
+    filepath_edge = os.path.join(AUDIO_CACHE_DIR, filename_edge)
+
+    if not os.path.exists(filepath_edge):
         try:
-            tts = gTTS(text=text, lang='en', tld=tld, slow=False)
-            tts.save(filepath)
+            import edge_tts as _edge_tts
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            async def _gen():
+                communicate = _edge_tts.Communicate(text, voice)
+                await communicate.save(filepath_edge)
+            loop.run_until_complete(_gen())
+            loop.close()
         except Exception as e:
-            app.logger.error(f"TTS Error: {e}")
-            return jsonify({"msg": "Error generating audio"}), 500
+            app.logger.warning(f"edge_tts failed ({e}), falling back to gTTS")
+            # Fallback: gTTS với accent tương ứng
+            tld_map = {'en-US': 'com', 'en-GB': 'co.uk', 'en-AU': 'com.au', 'en-IN': 'co.in'}
+            tld = 'com'
+            for prefix, t in tld_map.items():
+                if voice.startswith(prefix):
+                    tld = t
+                    break
+            filename_gtts = f"gtts_{tld}_{safe_text}.mp3"
+            filepath_gtts = os.path.join(AUDIO_CACHE_DIR, filename_gtts)
+            if not os.path.exists(filepath_gtts):
+                try:
+                    tts = gTTS(text=text, lang='en', tld=tld, slow=False)
+                    tts.save(filepath_gtts)
+                except Exception as e2:
+                    app.logger.error(f"gTTS also failed: {e2}")
+                    return jsonify({"msg": "Error generating audio"}), 500
+            return send_file(filepath_gtts, mimetype="audio/mpeg")
 
-    return send_file(filepath, mimetype="audio/mpeg")
+    return send_file(filepath_edge, mimetype="audio/mpeg")
 
 @app.route('/api/voices', methods=['GET'])
 @jwt_required()
@@ -1901,12 +1915,12 @@ if __name__ == '__main__':
 
         if voices_collection.count_documents({}) == 0:
             default_voices = [
-                {"id": "en-US-AriaNeural", "name": "Giọng Mỹ (Nữ)", "gender": "Female", "region": "US", "status": "on"},
-                {"id": "en-US-GuyNeural", "name": "Giọng Mỹ (Nam)", "gender": "Male", "region": "US", "status": "on"},
-                {"id": "en-GB-SoniaNeural", "name": "Giọng Anh (Nữ)", "gender": "Female", "region": "UK", "status": "on"},
-                {"id": "en-GB-RyanNeural", "name": "Giọng Anh (Nam)", "gender": "Male", "region": "UK", "status": "on"},
-                {"id": "en-AU-NatashaNeural", "name": "Giọng Úc (Nữ)", "gender": "Female", "region": "AU", "status": "on"},
-                {"id": "en-IN-NeerjaNeural", "name": "Giọng Ấn Độ (Nữ)", "gender": "Female", "region": "IN", "status": "on"},
+                {"id": "en-US-AriaNeural",   "name": "Cô Aria (Mỹ - Nữ)",     "gender": "Female", "region": "US", "tld": "com",    "status": "on"},
+                {"id": "en-US-GuyNeural",    "name": "Thầy Guy (Mỹ - Nam)",   "gender": "Male",   "region": "US", "tld": "com",    "status": "on"},
+                {"id": "en-GB-SoniaNeural",  "name": "Cô Sonia (Anh - Nữ)",   "gender": "Female", "region": "UK", "tld": "co.uk",  "status": "on"},
+                {"id": "en-GB-RyanNeural",   "name": "Thầy Ryan (Anh - Nam)",  "gender": "Male",   "region": "UK", "tld": "co.uk",  "status": "on"},
+                {"id": "en-AU-NatashaNeural","name": "Cô Natasha (Úc - Nữ)",  "gender": "Female", "region": "AU", "tld": "com.au", "status": "on"},
+                {"id": "en-AU-WilliamNeural","name": "Thầy William (Úc - Nam)","gender": "Male",  "region": "AU", "tld": "com.au", "status": "on"},
             ]
             voices_collection.insert_many(default_voices)
             print("--- ĐÃ KHỞI TẠO 5 GIỌNG ĐỌC EDGE-TTS MẶC ĐỊNH ---")
