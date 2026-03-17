@@ -4647,12 +4647,9 @@ img, video, iframe { max-width: 100%; }
     order: -1 !important;
   }
 
-  /* Main grid: flashcard trước, sidebar sau */
+  /* Main grid: flashcard trước, sidebar sau — KHÔNG dùng display:flex để tránh override .hidden */
   .main-grid {
-    display: flex !important;
-    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
     gap: 0.45rem !important;
   }
-  .sidebar { order: 2 !important; }
-  .learning-area { order: 1 !important; }
 }
