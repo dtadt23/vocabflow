@@ -3555,28 +3555,29 @@ body {
     display: flex;
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    background: hsl(var(--card) / 0.96);
+    background: hsl(var(--card) / 0.97);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border-top: 1px solid hsl(var(--border) / 0.5);
     z-index: 60;
-    padding: 0.3rem 0.5rem calc(0.3rem + env(safe-area-inset-bottom));
-    justify-content: space-around;
-    align-items: flex-end;
-    gap: 0.15rem;
+    padding: 0.25rem 0 calc(0.25rem + env(safe-area-inset-bottom));
+    justify-content: stretch;
+    align-items: stretch;
+    gap: 0;
   }
   .mobile-nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.15rem;
+    justify-content: center;
+    gap: 0.12rem;
     color: hsl(var(--muted-foreground));
-    font-size: 0.52rem;
+    font-size: 0.5rem;
     font-weight: 600;
     text-decoration: none;
-    padding: 0.4rem 0.2rem 0.25rem;
-    border-radius: 0.6rem;
-    transition: color 0.18s, background 0.18s;
+    padding: 0.4rem 0 0.25rem;
+    border-radius: 0;
+    transition: color 0.15s, background 0.15s;
     cursor: pointer;
     background: none;
     border: none;
@@ -3584,14 +3585,14 @@ body {
     position: relative;
     flex: 1;
     min-width: 0;
-    max-width: 60px;
     overflow: hidden;
+    white-space: nowrap;
   }
   .mobile-nav-item svg {
-    width: 20px; height: 20px;
+    width: 19px; height: 19px;
     flex-shrink: 0;
-    transition: transform 0.18s;
-    stroke-width: 1.8;
+    transition: transform 0.15s;
+    stroke-width: 1.7;
   }
   .mobile-nav-item.active {
     color: hsl(var(--primary));
@@ -4419,4 +4420,187 @@ img, video, iframe { max-width: 100%; }
   .main-grid { grid-template-columns: 220px 1fr !important; gap: 0.875rem !important; }
   .flash-word { font-size: clamp(2rem, 6vw, 3rem) !important; }
   .mode-selection-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+
+/* ==========================================================================
+   DASHBOARD MOBILE — Smart Layout
+   ========================================================================== */
+@media (max-width: 480px) {
+
+  /* ── Main grid: sidebar trên, flashcard dưới ── */
+  .main-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+    margin-top: 0.4rem !important;
+  }
+
+  /* ── Sidebar: compact row ── */
+  .sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.4rem !important;
+    overflow: visible !important;
+  }
+
+  /* Deck selector card */
+  .my-decks-card {
+    width: 100% !important;
+    min-width: unset !important;
+    padding: 0.6rem 0.85rem !important;
+    border-radius: 0.875rem !important;
+    flex-shrink: unset !important;
+  }
+
+  /* Deck selector header */
+  #active-deck-label {
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+    max-width: calc(100vw - 140px) !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  /* Deck dropdown */
+  #deck-dropdown-panel {
+    max-height: 50vh !important;
+    overflow-y: auto !important;
+  }
+  .deck-list { max-height: 160px !important; }
+
+  /* Word list card: collapsible, compact */
+  .word-list-card {
+    width: 100% !important;
+    min-width: unset !important;
+    flex-shrink: unset !important;
+    border-radius: 0.875rem !important;
+    max-height: 160px !important;
+    overflow-y: auto !important;
+  }
+  .word-list-header {
+    padding: 0.45rem 0.75rem !important;
+    position: sticky !important;
+    top: 0 !important;
+    background: hsl(var(--card)) !important;
+    z-index: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+  .word-list-header h3 { font-size: 0.8rem !important; font-weight: 700 !important; }
+  #word-list-badge { font-size: 0.68rem !important; }
+  .word-item { padding: 0.45rem 0.75rem !important; }
+  .word-title { font-size: 0.82rem !important; }
+  .word-meaning { font-size: 0.72rem !important; }
+
+  /* ── Learning area ── */
+  .learning-area { gap: 0.5rem !important; }
+  .learning-content { gap: 0.45rem !important; }
+
+  /* Controls */
+  .controls {
+    padding: 0.25rem 0 !important;
+    gap: 0.35rem !important;
+    flex-wrap: nowrap !important;
+  }
+  .control-buttons {
+    gap: 0.3rem !important;
+    flex-shrink: 0 !important;
+  }
+  .control-buttons .btn {
+    padding: 0.35rem 0.55rem !important;
+    font-size: 0.7rem !important;
+    gap: 0.2rem !important;
+    border-radius: 0.55rem !important;
+    white-space: nowrap !important;
+  }
+  .control-buttons .btn .icon-sm { display: none !important; }
+  .word-indicator {
+    font-size: 0.72rem !important;
+    white-space: nowrap !important;
+    margin-left: auto !important;
+  }
+
+  /* Flashcard */
+  .flashcard-container { margin: 0 !important; }
+  .flip-card {
+    width: 100% !important;
+    min-height: 180px !important;
+    border-radius: 1rem !important;
+  }
+  .flash-card {
+    border-radius: 1rem !important;
+    padding: 1rem 0.9rem 0.85rem !important;
+    min-height: 180px !important;
+    gap: 0.3rem !important;
+  }
+  .flash-word {
+    font-size: clamp(1.5rem, 8vw, 2.2rem) !important;
+    line-height: 1.15 !important;
+    word-break: break-word !important;
+    margin-bottom: 0.15rem !important;
+  }
+  .flash-ipa {
+    font-size: 0.82rem !important;
+    opacity: 0.7 !important;
+  }
+  .flash-meaning {
+    font-size: 0.83rem !important;
+    line-height: 1.4 !important;
+  }
+  .example-box { margin-top: 0.35rem !important; }
+  .example-text { font-size: 0.72rem !important; line-height: 1.4 !important; }
+
+  /* Action buttons */
+  .action-buttons {
+    display: flex !important;
+    gap: 0.5rem !important;
+    justify-content: center !important;
+    padding: 0.3rem 0 !important;
+  }
+  #learned-btn, #review-btn, #flip-back-btn {
+    padding: 0.55rem 0.9rem !important;
+    font-size: 0.8rem !important;
+    border-radius: 1.5rem !important;
+    flex: 1 !important;
+    max-width: 120px !important;
+    font-weight: 700 !important;
+    min-height: 38px !important;
+  }
+  #flip-back-btn { max-width: 85px !important; }
+
+  /* Nav controls */
+  .navigation-controls {
+    gap: 0.35rem !important;
+    justify-content: center !important;
+  }
+  .navigation-controls .btn {
+    padding: 0.42rem 0.75rem !important;
+    font-size: 0.76rem !important;
+    min-height: 36px !important;
+    font-weight: 700 !important;
+    border-radius: 0.65rem !important;
+  }
+
+  /* Progress dots */
+  .progress-dots {
+    max-height: 28px !important;
+    overflow: hidden !important;
+    gap: 2px !important;
+  }
+  .progress-dot { width: 5px !important; height: 5px !important; }
+
+  /* FAB */
+  .fab-chat {
+    width: 44px !important;
+    height: 44px !important;
+    bottom: calc(64px + env(safe-area-inset-bottom)) !important;
+    right: 0.75rem !important;
+    padding: 9px !important;
+  }
+
+  /* Main padding */
+  .main { padding-bottom: calc(64px + env(safe-area-inset-bottom)) !important; }
+  .container { padding-left: 0.65rem !important; padding-right: 0.65rem !important; }
 }
