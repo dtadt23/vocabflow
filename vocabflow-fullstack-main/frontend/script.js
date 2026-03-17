@@ -10,6 +10,28 @@ const BACKEND_API_URL =
 
 window.BACKEND_API_URL = BACKEND_API_URL;
 
+// =========================================================
+// VOICE HELPER — luôn dùng giọng đã chọn
+// =========================================================
+function getCurrentVoiceId() {
+  // Ưu tiên: currentUser.preferred_voice > localStorage > default
+  if (currentUser && currentUser.preferred_voice) return currentUser.preferred_voice;
+  try {
+    const stored = JSON.parse(localStorage.getItem('vocabflow_currentUser') || '{}');
+    if (stored.preferred_voice) return stored.preferred_voice;
+  } catch(e) {}
+  return 'en-US-AriaNeural';
+}
+
+function playWordAudio(word) {
+  if (!word) return;
+  const voiceId = getCurrentVoiceId();
+  const audio = new Audio(`${BACKEND_API_URL}/audio?text=${encodeURIComponent(word)}&voice=${encodeURIComponent(voiceId)}`);
+  audio.play().catch(e => console.warn('Audio error:', e));
+  return audio;
+}
+
+
 // Kiểm tra bảo trì khi load trang (trước khi login)
 (async function checkMaintenanceOnLoad() {
   try {
@@ -1014,8 +1036,8 @@ function handlePronunciation() {
   if (!word || !word.word) return;
   if (globalFlashcardAudio) { globalFlashcardAudio.pause(); globalFlashcardAudio.src = ""; globalFlashcardAudio.load(); globalFlashcardAudio = null; }
   try {
-    const voiceId = (currentUser && currentUser.preferred_voice) ? currentUser.preferred_voice : "en-US-AriaNeural";
-    globalFlashcardAudio = new Audio(`${BACKEND_API_URL}/audio?text=${encodeURIComponent(word.word)}&voice=${voiceId}`);
+    const voiceId = getCurrentVoiceId();
+    globalFlashcardAudio = new Audio(`${BACKEND_API_URL}/audio?text=${encodeURIComponent(word.word)}&voice=${encodeURIComponent(voiceId)}`);
     if (elements.pronunciationBtn) elements.pronunciationBtn.style.opacity = "0.4";
     globalFlashcardAudio.play()
       .then(() => {

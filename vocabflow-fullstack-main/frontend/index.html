@@ -3525,12 +3525,19 @@
       el('pg-listen-btn')?.addEventListener('click', function() {
         const word = el('pg-word').textContent;
         if (!word || word.includes('🎉')) return;
-        const utter = new SpeechSynthesisUtterance(word);
-        utter.lang = 'en-US'; utter.rate = 0.85;
-        speechSynthesis.cancel();
-        speechSynthesis.speak(utter);
-        this.classList.add('playing');
-        utter.onend = () => this.classList.remove('playing');
+        const btn = this;
+        const voiceId = (window.currentUser && window.currentUser.preferred_voice)
+          ? window.currentUser.preferred_voice : 'en-US-AriaNeural';
+        const apiBase = window.BACKEND_API_URL || 'https://backend-late-bird-6083.fly.dev/api';
+        const audio = new Audio(`${apiBase}/audio?text=${encodeURIComponent(word)}&voice=${encodeURIComponent(voiceId)}`);
+        btn.classList.add('playing');
+        audio.play().catch(() => {
+          // fallback to speechSynthesis
+          const utter = new SpeechSynthesisUtterance(word);
+          utter.lang = 'en-US'; utter.rate = 0.85;
+          speechSynthesis.cancel(); speechSynthesis.speak(utter);
+        });
+        audio.onended = () => btn.classList.remove('playing');
       });
 
       // ── Ghi âm ───────────────────────────────────────────
@@ -3659,10 +3666,15 @@
       $('pg-listen-btn')?.addEventListener('click', () => {
         const word = pgWords[pgIndex]?.word;
         if (!word) return;
-        const utter = new SpeechSynthesisUtterance(word);
-        utter.lang = 'en-US'; utter.rate = 0.85;
-        speechSynthesis.cancel();
-        speechSynthesis.speak(utter);
+        const voiceId = (window.currentUser && window.currentUser.preferred_voice)
+          ? window.currentUser.preferred_voice : 'en-US-AriaNeural';
+        const apiBase = window.BACKEND_API_URL || 'https://backend-late-bird-6083.fly.dev/api';
+        const audio = new Audio(`${apiBase}/audio?text=${encodeURIComponent(word)}&voice=${encodeURIComponent(voiceId)}`);
+        audio.play().catch(() => {
+          const utter = new SpeechSynthesisUtterance(word);
+          utter.lang = 'en-US'; utter.rate = 0.85;
+          speechSynthesis.cancel(); speechSynthesis.speak(utter);
+        });
       });
 
       // ── Bắt đầu ghi âm ─────────────────────────────────────
