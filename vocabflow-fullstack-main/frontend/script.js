@@ -11,6 +11,37 @@ const BACKEND_API_URL =
 window.BACKEND_API_URL = BACKEND_API_URL;
 
 // =========================================================
+// MOBILE WORD LIST TOGGLE
+// =========================================================
+(function initWordListToggle() {
+  const card = document.querySelector('.word-list-card');
+  const header = card && card.querySelector('.word-list-header');
+  if (!card || !header) return;
+  
+  function isMobile() { return window.innerWidth <= 480; }
+  
+  // Thêm icon toggle
+  if (!header.querySelector('.wl-toggle-icon')) {
+    const icon = document.createElement('span');
+    icon.className = 'wl-toggle-icon';
+    icon.style.cssText = 'font-size:0.7rem;opacity:0.6;margin-left:0.3rem;transition:transform .2s;display:inline-block';
+    icon.textContent = '▼';
+    header.appendChild(icon);
+  }
+  
+  header.addEventListener('click', function() {
+    if (!isMobile()) return;
+    card.classList.toggle('wl-expanded');
+    const icon = header.querySelector('.wl-toggle-icon');
+    if (icon) icon.style.transform = card.classList.contains('wl-expanded') ? 'rotate(180deg)' : '';
+  });
+  
+  window.addEventListener('resize', function() {
+    if (!isMobile()) card.classList.add('wl-expanded');
+  });
+})();
+
+// =========================================================
 // VOICE HELPER — luôn dùng giọng đã chọn
 // =========================================================
 function getCurrentVoiceId() {

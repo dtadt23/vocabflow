@@ -4604,3 +4604,55 @@ img, video, iframe { max-width: 100%; }
   .main { padding-bottom: calc(64px + env(safe-area-inset-bottom)) !important; }
   .container { padding-left: 0.65rem !important; padding-right: 0.65rem !important; }
 }
+
+
+/* ==========================================================================
+   DASHBOARD MOBILE FIX — Word list ẩn mặc định
+   ========================================================================== */
+@media (max-width: 480px) {
+
+  /* Word list: ẩn mặc định, chỉ hiện nút toggle */
+  .word-list-card {
+    max-height: 42px !important;
+    overflow: hidden !important;
+    transition: max-height 0.3s ease !important;
+  }
+  .word-list-card.wl-expanded {
+    max-height: 220px !important;
+  }
+  .word-list-header {
+    cursor: pointer !important;
+    user-select: none !important;
+    padding: 0.55rem 0.85rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: sticky !important;
+    top: 0 !important;
+    background: hsl(var(--card)) !important;
+    z-index: 1 !important;
+    border-radius: 0.875rem !important;
+  }
+  .word-list-header h3 {
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+  }
+  #word-list-badge {
+    font-size: 0.68rem !important;
+    margin-right: 0.3rem !important;
+  }
+
+  /* Flashcard luôn hiện đầu tiên */
+  .learning-area {
+    order: -1 !important;
+  }
+
+  /* Main grid: flashcard trước, sidebar sau */
+  .main-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.45rem !important;
+  }
+  .sidebar { order: 2 !important; }
+  .learning-area { order: 1 !important; }
+}

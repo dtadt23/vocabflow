@@ -666,8 +666,25 @@
         gap: 0;
       }
 
-      /* Sidebar ẩn đi — thay bằng floating button + drawer */
-      .group-sidebar { display: none; }
+      /* Sidebar: hiện dạng compact trên mobile */
+      .group-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+      }
+      .group-sidebar {
+        display: block !important;
+        border-right: none !important;
+        border-bottom: 1px solid hsl(var(--border) / 0.4) !important;
+        padding: 0.75rem !important;
+        background: hsl(var(--card)) !important;
+        border-radius: 0.875rem !important;
+        margin-bottom: 0.5rem !important;
+      }
+      .group-sidebar-header {
+        padding: 0 0 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+      }
 
       /* Main panel full width */
       .group-main { gap: 0.75rem; }
