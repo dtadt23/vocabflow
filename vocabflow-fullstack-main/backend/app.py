@@ -13,7 +13,9 @@ import requests
 import logging
 import json 
 import re 
+import asyncio
 from gtts import gTTS
+import io
 import tempfile 
 from io import BytesIO
 from docx import Document
@@ -1469,19 +1471,33 @@ def get_audio():
     voice = request.args.get('voice', 'en-US-AriaNeural')
     if not text:
         return jsonify({"msg": "Missing text"}), 400
+
+    # Map voice ID sang gTTS tld (accent)
+    # en-US-* → com, en-GB-* → co.uk, en-AU-* → com.au, en-IN-* → co.in
+    tld_map = {
+        'en-US': 'com',
+        'en-GB': 'co.uk',
+        'en-AU': 'com.au',
+        'en-IN': 'co.in',
+    }
+    tld = 'com'  # default US
+    for prefix, t in tld_map.items():
+        if voice.startswith(prefix):
+            tld = t
+            break
+
     safe_text = re.sub(r'[^a-zA-Z0-9]', '_', text.strip()[:50])
-    filename = f"{voice}_{safe_text}.mp3"
+    filename = f"gtts_{tld}_{safe_text}.mp3"
     filepath = os.path.join(AUDIO_CACHE_DIR, filename)
+
     if not os.path.exists(filepath):
         try:
-            tts = gTTS(text=text, lang='en', slow=False)
+            tts = gTTS(text=text, lang='en', tld=tld, slow=False)
             tts.save(filepath)
         except Exception as e:
             app.logger.error(f"TTS Error: {e}")
-            if os.path.exists(filepath):
-                try: os.remove(filepath)
-                except: pass
             return jsonify({"msg": "Error generating audio"}), 500
+
     return send_file(filepath, mimetype="audio/mpeg")
 
 @app.route('/api/voices', methods=['GET'])
@@ -1885,11 +1901,12 @@ if __name__ == '__main__':
 
         if voices_collection.count_documents({}) == 0:
             default_voices = [
-                {"id": "en-US-AriaNeural", "name": "Cô Aria (Mỹ - Rõ ràng)", "gender": "Female", "region": "US", "status": "on"},
-                {"id": "en-US-GuyNeural", "name": "Thầy Guy (Mỹ - Trầm ấm)", "gender": "Male", "region": "US", "status": "on"},
-                {"id": "en-GB-SoniaNeural", "name": "Cô Sonia (Anh - Trang trọng)", "gender": "Female", "region": "UK", "status": "on"},
-                {"id": "en-GB-RyanNeural", "name": "Thầy Ryan (Anh - Chuyên nghiệp)", "gender": "Male", "region": "UK", "status": "on"},
-                {"id": "en-AU-NatashaNeural", "name": "Cô Natasha (Úc - Năng động)", "gender": "Female", "region": "AU", "status": "off"}
+                {"id": "en-US-AriaNeural", "name": "Giọng Mỹ (Nữ)", "gender": "Female", "region": "US", "status": "on"},
+                {"id": "en-US-GuyNeural", "name": "Giọng Mỹ (Nam)", "gender": "Male", "region": "US", "status": "on"},
+                {"id": "en-GB-SoniaNeural", "name": "Giọng Anh (Nữ)", "gender": "Female", "region": "UK", "status": "on"},
+                {"id": "en-GB-RyanNeural", "name": "Giọng Anh (Nam)", "gender": "Male", "region": "UK", "status": "on"},
+                {"id": "en-AU-NatashaNeural", "name": "Giọng Úc (Nữ)", "gender": "Female", "region": "AU", "status": "on"},
+                {"id": "en-IN-NeerjaNeural", "name": "Giọng Ấn Độ (Nữ)", "gender": "Female", "region": "IN", "status": "on"},
             ]
             voices_collection.insert_many(default_voices)
             print("--- ĐÃ KHỞI TẠO 5 GIỌNG ĐỌC EDGE-TTS MẶC ĐỊNH ---")
