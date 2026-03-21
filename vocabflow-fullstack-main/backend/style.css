@@ -4653,3 +4653,44 @@ img, video, iframe { max-width: 100%; }
     gap: 0.45rem !important;
   }
 }
+
+
+/* ==========================================================================
+   FIX iOS Safari flip card mirror bug
+   ========================================================================== */
+.flip-card {
+  -webkit-perspective: 1400px;
+  perspective: 1400px;
+}
+.flip-card-inner {
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.flip-card.flipped .flip-card-inner {
+  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+}
+.flip-card-front,
+.flip-card-back {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  /* Fix Safari: thêm transform translateZ(0) */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+.flip-card-back {
+  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+}
+/* Khi đã flipped, back face cần translateZ */
+.flip-card.flipped .flip-card-back {
+  -webkit-transform: rotateY(180deg) translateZ(0);
+  transform: rotateY(180deg) translateZ(0);
+}
+/* Đảm bảo text không bị mirror */
+.flip-card-front *, .flip-card-back * {
+  -webkit-transform: none;
+  transform: none;
+}
