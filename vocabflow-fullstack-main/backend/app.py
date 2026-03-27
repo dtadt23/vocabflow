@@ -1553,6 +1553,7 @@ def get_system_config():
         default_configs = [
             {"key": "gemini_model", "value": "gemini-2.5-flash", "label": "Tên Model AI (Gemini)"},
             {"key": "gemini_api_key", "value": os.getenv("GEMINI_API_KEY", ""), "label": "Google Gemini API Key"},
+            {"key": "openai_api_key", "value": os.getenv("OPENAI_API_KEY", ""), "label": "OpenAI API Key (Luyện Phát Âm)"},
             {"key": "xp_per_word", "value": 10, "label": "XP nhận được cho mỗi từ đã học"},
             {"key": "daily_goal_limit", "value": 100, "label": "Giới hạn mục tiêu hàng ngày tối đa"}
         ]
@@ -1577,9 +1578,12 @@ def update_system_config():
         value = data.get("value")
         if not key:
             return jsonify({"msg": "Thiếu khóa cấu hình"}), 400
-        result = config_collection.update_one({"key": key}, {"$set": {"value": value}})
-        if result.matched_count == 0:
-            return jsonify({"msg": "Không tìm thấy tham số này"}), 404
+        # upsert=True: tự tạo mới nếu key chưa tồn tại
+        config_collection.update_one(
+            {"key": key},
+            {"$set": {"key": key, "value": value}},
+            upsert=True
+        )
         return jsonify({"msg": f"Đã cập nhật {key} thành công"}), 200
     except Exception as e:
         return jsonify({"msg": str(e)}), 500
