@@ -1135,6 +1135,16 @@
                   <div class="flip-card-inner">
                     <div class="flip-card-front learning-card">
                       <div class="card-content">
+                        <!-- Word type badge + image placeholder btn -->
+                        <div class="card-top-row" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem">
+                          <span class="word-type-badge" id="word-type-badge" style="display:none;font-size:0.65rem;font-weight:700;padding:0.18rem 0.55rem;border-radius:999px;letter-spacing:0.04em;text-transform:uppercase;background:hsl(214 90% 52%/0.15);color:hsl(214 90% 42%);border:1px solid hsl(214 90% 52%/0.25)"></span>
+                          <button class="btn btn-ghost" id="card-image-btn" title="Hình ảnh minh họa (sắp ra mắt)"
+                            style="padding:0.25rem 0.5rem;font-size:0.7rem;opacity:0.5;cursor:not-allowed;border:1px dashed hsl(var(--border));border-radius:0.5rem;display:flex;align-items:center;gap:0.25rem;margin-left:auto"
+                            onclick="event.stopPropagation();alert('Tính năng hình ảnh minh họa đang được phát triển! 🖼️')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                            Ảnh
+                          </button>
+                        </div>
                         <div class="word-section">
                           <h2 class="word-text" id="word-text" lang="en" translate="no"></h2>
                           <p class="word-ipa" id="word-ipa" lang="en" translate="no"></p>
@@ -1609,7 +1619,7 @@
 
         <!-- 4. Tiến Độ View -->
         <div class="page-view hidden" id="progress-view">
-          <h2 class="page-title">Tiến Độ Học Tập Chi Tiết</h2>
+          <h2 class="page-title">Tiến Độ Học Tập Chi Tiết và Bảng Xếp Hạng</h2>
           <p class="page-subtitle">Theo dõi thành tích và xu hướng học từ vựng của bạn.</p>
           <div class="progress-grid">
             <div class="data-card large-card progress-summary">
@@ -2510,10 +2520,15 @@
       const row = document.createElement('div');
       row.className = 'word-input-row';
       row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.4rem;align-items:center';
+      const wtypes = ['','n.','v.','adj.','adv.','prep.','pron.','conj.','int.'];
       row.innerHTML = `
         <input type="text" placeholder="Từ (VD: Serendipity)" value="${escHtml(w?.word || '')}" data-field="word"
           style="padding:6px 9px;border-radius:7px;border:1px solid hsl(var(--border)/0.6);font-size:0.82rem;background:hsl(var(--card)/0.8)"
-          oninput="updateGrpWordCount()"/>
+          oninput="updateGrpWordCount()" onblur="autoDetectWordType(this)"/>
+        <select data-field="word_type"
+          style="padding:6px 9px;border-radius:7px;border:1px solid hsl(var(--border)/0.6);font-size:0.82rem;background:hsl(var(--card)/0.8);cursor:pointer">
+          ${wtypes.map(t=>`<option value="${t}" ${(w?.word_type||'')==t?'selected':''}>${t||'Loại từ...'}</option>`).join('')}
+        </select>
         <input type="text" placeholder="IPA (/ˌsɛr.../) " value="${escHtml(w?.ipa || '')}" data-field="ipa"
           style="padding:6px 9px;border-radius:7px;border:1px solid hsl(var(--border)/0.6);font-size:0.82rem;background:hsl(var(--card)/0.8)"/>
         <input type="text" placeholder="Nghĩa tiếng Việt" value="${escHtml(w?.meaning || '')}" data-field="meaning"
@@ -2526,6 +2541,34 @@
       updateGrpWordCount();
     };
 
+    // AI tự nhận diện loại từ
+    window.autoDetectWordType = async function(input) {
+      const word = input.value.trim();
+      if (!word) return;
+      const row = input.closest('.word-input-row');
+      const select = row?.querySelector('[data-field="word_type"]');
+      if (!select || select.value) return; // đã có loại từ rồi thì bỏ qua
+      try {
+        const token = (window.currentUser && window.currentUser.token)
+                      || localStorage.getItem('vocabflow_authToken');
+        const apiBase = window.BACKEND_API_URL || 'https://backend-late-bird-6083.fly.dev/api';
+        const res = await fetch(apiBase + '/ai/word-type', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ word })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.word_type && select) {
+            select.value = data.word_type;
+            select.style.background = 'hsl(158 64% 42% / 0.1)';
+            select.style.borderColor = 'hsl(158 64% 42% / 0.4)';
+            setTimeout(() => { select.style.background = ''; select.style.borderColor = ''; }, 2000);
+          }
+        }
+      } catch(e) { console.warn('word-type detect:', e); }
+    };
+
     window.submitDeck = async function() {
       if (!activeGroup) return;
       const name = document.getElementById('input-deck-name').value.trim();
@@ -2535,9 +2578,10 @@
       const rows  = document.querySelectorAll('#deck-word-inputs .word-input-row');
       const words = [];
       rows.forEach((row, idx) => {
-        const word    = row.querySelector('[data-field="word"]').value.trim();
-        const ipa     = row.querySelector('[data-field="ipa"]').value.trim();
-        const meaning = row.querySelector('[data-field="meaning"]').value.trim();
+        const word      = row.querySelector('[data-field="word"]').value.trim();
+        const ipa       = row.querySelector('[data-field="ipa"]').value.trim();
+        const meaning   = row.querySelector('[data-field="meaning"]').value.trim();
+        const word_type = row.querySelector('[data-field="word_type"]')?.value || '';
         if (word) words.push({ id: `w-${Date.now()}-${idx}`, word, ipa, meaning });
       });
       if (!words.length) { toast('Vui lòng thêm ít nhất 1 từ', 'error'); return; }
@@ -3392,250 +3436,6 @@
         ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
         : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
     });
-    </script>
-
-    <!-- ===== PRONUNCIATION AI MODULE v2 ===== -->
-    <script>
-    (function() {
-      'use strict';
-
-      // ── State ────────────────────────────────────────────
-      let pgWords       = [];   // danh sách từ phiên này
-      let pgIndex       = 0;    // vị trí hiện tại
-      let mediaRecorder = null;
-      let audioChunks   = [];
-      let sessionScores = [];   // [{word, score}]
-
-      // ── Elements ─────────────────────────────────────────
-      const overlay      = () => document.getElementById('pronun-overlay');
-      const el           = id  => document.getElementById(id);
-
-      // ── Helpers ───────────────────────────────────────────
-      function showState(name) {
-        ['idle','recording','analyzing','result'].forEach(s => {
-          el('pg-state-' + s).classList.toggle('hidden', s !== name);
-        });
-      }
-
-      function updateProgress() {
-        const total = pgWords.length;
-        el('pronun-current-num').textContent = Math.min(pgIndex + 1, total);
-        el('pronun-total-num').textContent   = total;
-        const pct = total ? (pgIndex / total) * 100 : 0;
-        el('pronun-progress-fill').style.width = pct + '%';
-      }
-
-      function loadWord(idx) {
-        if (idx >= pgWords.length) { endSession(); return; }
-        const w = pgWords[idx];
-        el('pg-word').textContent    = w.word    || '';
-        el('pg-ipa').textContent     = w.ipa     ? '/' + w.ipa + '/' : '';
-        el('pg-meaning').textContent = w.meaning || '';
-        showState('idle');
-        updateProgress();
-      }
-
-      function scoreColor(s) {
-        if (s >= 80) return '#22c55e';
-        if (s >= 60) return '#f59e0b';
-        return '#ef4444';
-      }
-
-      function renderScoreRing(score) {
-        const arc = el('pg-score-arc');
-        const r   = 26, circ = 2 * Math.PI * r;
-        const pct = Math.max(0, Math.min(100, score)) / 100;
-        arc.style.strokeDasharray  = circ;
-        arc.style.strokeDashoffset = circ * (1 - pct);
-        arc.style.stroke = scoreColor(score);
-        el('pg-score-num').textContent = score;
-        el('pg-score-num').style.color = scoreColor(score);
-      }
-
-      function renderResult(data) {
-        const score = data.score || 0;
-        renderScoreRing(score);
-
-        // Verdict
-        const verdicts = { 'Xuất sắc': '🌟', 'Tốt': '👍', 'Khá': '🙂', 'Cần cải thiện': '💪' };
-        const icon = verdicts[data.overall] || '🎙️';
-        el('pg-verdict').textContent     = icon + ' ' + (data.overall || '');
-        el('pg-verdict-sub').textContent = score >= 80 ? 'Phát âm rất tốt!' : score >= 60 ? 'Tiếp tục luyện tập!' : 'Hãy nghe lại và thử thêm.';
-
-        // Feedback list
-        let html = '';
-        if (data.correct)           html += '<div class="pg-fb-item correct">✅ ' + data.correct + '</div>';
-        if (data.errors)            html += '<div class="pg-fb-item error">⚠️ ' + data.errors + '</div>';
-        if (data.tip)               html += '<div class="pg-fb-item tip">💡 ' + data.tip + '</div>';
-        if (data.phonetic_feedback) html += '<div class="pg-fb-item phonetic">🔤 ' + data.phonetic_feedback + '</div>';
-        el('pg-feedback-list').innerHTML = html;
-
-        // Lưu điểm phiên
-        const w = pgWords[pgIndex] || {};
-        sessionScores.push({ word: w.word || '', score });
-        renderSessionScores();
-
-        showState('result');
-      }
-
-      function renderSessionScores() {
-        const container = el('pronun-session-scores');
-        if (!container || sessionScores.length === 0) return;
-        container.innerHTML = sessionScores.map(s =>
-          '<div class="pg-session-dot" title="' + s.word + ': ' + s.score + '" style="background:' + scoreColor(s.score) + '">' +
-            '<span>' + s.word.slice(0, 3) + '</span>' +
-          '</div>'
-        ).join('');
-      }
-
-      function endSession() {
-        const avg = sessionScores.length
-          ? Math.round(sessionScores.reduce((a,b) => a + b.score, 0) / sessionScores.length)
-          : 0;
-        el('pg-word').textContent    = '🎉 Hoàn thành!';
-        el('pg-ipa').textContent     = '';
-        el('pg-meaning').textContent = 'Điểm trung bình phiên: ' + avg + '/100';
-        showState('idle');
-        el('pg-mic-start').style.display = 'none';
-        el('pronun-current-num').textContent = pgWords.length;
-      }
-
-      // ── Open / Close ─────────────────────────────────────
-      function openPronunMode() {
-        // Lấy từ từ deck hiện tại
-        const allDecks = window._decks || [];
-        const activeId = window._activeDeckId;
-        let words = [];
-        if (activeId) {
-          const deck = allDecks.find(d => d.id === activeId);
-          if (deck) words = deck.words || [];
-        }
-        if (!words.length) {
-          allDecks.forEach(d => { words = words.concat(d.words || []); });
-        }
-        if (!words.length) {
-          alert('Chưa có từ vựng nào. Hãy tạo bộ từ trước!');
-          return;
-        }
-
-        // Shuffle
-        pgWords = words.slice().sort(() => Math.random() - 0.5).slice(0, 20);
-        pgIndex = 0;
-        sessionScores = [];
-        el('pronun-session-scores').innerHTML = '';
-        el('pg-mic-start').style.display = '';
-
-        overlay().classList.remove('hidden');
-        loadWord(0);
-      }
-
-      function closePronunMode() {
-        overlay().classList.add('hidden');
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          mediaRecorder.stop();
-          mediaRecorder.stream?.getTracks().forEach(t => t.stop());
-        }
-        mediaRecorder = null;
-      }
-
-      // ── Nghe phát âm chuẩn ───────────────────────────────
-      el('pg-listen-btn')?.addEventListener('click', function() {
-        const word = el('pg-word').textContent;
-        if (!word || word.includes('🎉')) return;
-        const btn = this;
-        const voiceId = (window.currentUser && window.currentUser.preferred_voice)
-          ? window.currentUser.preferred_voice : 'en-US-AriaNeural';
-        const apiBase = window.BACKEND_API_URL || 'https://backend-late-bird-6083.fly.dev/api';
-        const audio = new Audio(`${apiBase}/audio?text=${encodeURIComponent(word)}&voice=${encodeURIComponent(voiceId)}`);
-        btn.classList.add('playing');
-        audio.play().catch(() => {
-          // fallback to speechSynthesis
-          const utter = new SpeechSynthesisUtterance(word);
-          utter.lang = 'en-US'; utter.rate = 0.85;
-          speechSynthesis.cancel(); speechSynthesis.speak(utter);
-        });
-        audio.onended = () => btn.classList.remove('playing');
-      });
-
-      // ── Ghi âm ───────────────────────────────────────────
-      el('pg-mic-start')?.addEventListener('click', async function() {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          audioChunks = [];
-          const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
-          mediaRecorder = new MediaRecorder(stream, { mimeType });
-          mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-          mediaRecorder.start(100);
-          showState('recording');
-        } catch(e) {
-          alert('Không thể truy cập microphone. Vui lòng cấp quyền trong trình duyệt.');
-        }
-      });
-
-      // ── Dừng & gửi AI ────────────────────────────────────
-      el('pg-mic-stop')?.addEventListener('click', function() {
-        if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
-        showState('analyzing');
-        mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(t => t.stop());
-
-        mediaRecorder.onstop = async () => {
-          const blob    = new Blob(audioChunks, { type: 'audio/webm' });
-          const reader  = new FileReader();
-          reader.onload = async ev => {
-            try {
-              const token   = (window.currentUser && window.currentUser.token)
-                              || localStorage.getItem('vocabflow_authToken');
-              const apiBase = window.BACKEND_API_URL || 'http://127.0.0.1:5000/api';
-              const word    = pgWords[pgIndex] || {};
-              const res = await fetch(apiBase + '/pronunciation/check', {
-                method : 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body   : JSON.stringify({ word: word.word, ipa: word.ipa, audio: ev.target.result })
-              });
-              if (res.ok) {
-                renderResult(await res.json());
-              } else {
-                renderResult({ score: 0, overall: 'Lỗi', errors: 'Không phân tích được, thử lại.', correct:'', tip:'', phonetic_feedback:'' });
-              }
-            } catch(e) {
-              renderResult({ score: 0, overall: 'Lỗi kết nối', errors: e.message, correct:'', tip:'', phonetic_feedback:'' });
-            }
-          };
-          reader.readAsDataURL(blob);
-        };
-      });
-
-      // ── Thử lại ──────────────────────────────────────────
-      el('pg-retry-btn')?.addEventListener('click', () => {
-        sessionScores.pop(); // xóa điểm vừa rồi
-        renderSessionScores();
-        showState('idle');
-      });
-
-      // ── Từ tiếp ───────────────────────────────────────────
-      el('pg-next-btn')?.addEventListener('click', () => {
-        pgIndex++;
-        loadWord(pgIndex);
-        updateProgress();
-      });
-
-      // ── Đóng ────────────────────────────────────────────
-      el('pronun-game-close')?.addEventListener('click', closePronunMode);
-      overlay()?.addEventListener('click', e => { if (e.target === overlay()) closePronunMode(); });
-
-      // ── Mở từ mode-selection ─────────────────────────────
-      document.getElementById('start-pronun-btn')?.addEventListener('click', openPronunMode);
-
-      // Expose decks từ script.js
-      const _origRenderDeckList = window.renderDeckList;
-      window.renderDeckList = function() {
-        if (_origRenderDeckList) _origRenderDeckList.apply(this, arguments);
-        window._decks        = window.__decks_ref || [];
-        window._activeDeckId = window.__activeDeckId_ref || null;
-      };
-
-    })();
     </script>
 
     <!-- ===== LUYỆN PHÁT ÂM AI MODULE ===== -->

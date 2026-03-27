@@ -536,8 +536,18 @@ function updateDisplay() {
   }
 
   elements.wordText.textContent = word.word;
-  elements.wordIpa.textContent = word.ipa || "";
+  elements.wordIpa.textContent = word.ipa ? `/${word.ipa}/` : "";
   elements.meaningText.textContent = word.meaning;
+  // Badge loại từ
+  const _typeBadge = document.getElementById("word-type-badge");
+  if (_typeBadge) {
+    const _wt = word.word_type || "";
+    const _cm = {"n.":["hsl(214 90% 52%/0.15)","hsl(214 90% 42%)","hsl(214 90% 52%/0.3)"],"v.":["hsl(158 64% 42%/0.15)","hsl(158 64% 32%)","hsl(158 64% 42%/0.3)"],"adj.":["hsl(35 91% 55%/0.15)","hsl(35 91% 35%)","hsl(35 91% 55%/0.3)"],"adv.":["hsl(270 70% 55%/0.15)","hsl(270 70% 40%)","hsl(270 70% 55%/0.3)"],"prep.":["hsl(4 86% 56%/0.12)","hsl(4 86% 40%)","hsl(4 86% 56%/0.25)"],"pron.":["hsl(200 80% 50%/0.15)","hsl(200 80% 35%)","hsl(200 80% 50%/0.3)"],"conj.":["hsl(320 70% 55%/0.15)","hsl(320 70% 40%)","hsl(320 70% 55%/0.3)"],"int.":["hsl(0 0% 50%/0.15)","hsl(0 0% 35%)","hsl(0 0% 50%/0.3)"]};
+    if (_wt && _cm[_wt]) {
+      _typeBadge.textContent = _wt; _typeBadge.style.display = "inline-flex";
+      [_typeBadge.style.background, _typeBadge.style.color, _typeBadge.style.borderColor] = _cm[_wt];
+    } else { _typeBadge.style.display = "none"; }
+  }
   elements.exampleBox.innerHTML = `
     <p class="example-text example-en" lang="en">"${word.example?.en || ""}"</p>
     <p class="example-text example-vi" lang="vi">"${word.example?.vi || ""}"</p>`;
@@ -897,10 +907,19 @@ function addWordInputField(word = { word: "", ipa: "", meaning: "", example: { e
   const group = document.createElement("div");
   group.className = "word-input-group";
   const wordId = word.id || `word-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  const wtOpts = ['','n.','v.','adj.','adv.','prep.','pron.','conj.','int.'];
   group.innerHTML = `
     <input type="hidden" class="word-id-input" value="${wordId}">
-    <div class="word-input-field">
-      <label>Từ</label><input type="text" placeholder="Từ tiếng Anh" class="word-input" value="${word.word}" lang="en">
+    <div class="word-input-field" style="position:relative">
+      <label>Từ tiếng Anh</label>
+      <div style="display:flex;gap:0.4rem;align-items:center">
+        <input type="text" placeholder="Từ tiếng Anh" class="word-input" value="${word.word}" lang="en" style="flex:1"
+          onblur="autoDetectWordTypeMain(this)">
+        <select class="word-type-select" title="Loại từ"
+          style="padding:0.4rem 0.5rem;border-radius:0.5rem;border:1px solid hsl(var(--border)/0.6);font-size:0.78rem;background:hsl(var(--card));cursor:pointer;min-width:72px">
+          ${wtOpts.map(t=>`<option value="${t}" ${(word.word_type||'')==t?'selected':''}>${t||'Loại từ'}</option>`).join('')}
+        </select>
+      </div>
       <label>Phiên âm IPA</label><input type="text" placeholder="/fəˈnɛtɪk/" class="ipa-input" value="${word.ipa || ""}" lang="en">
     </div>
     <div class="word-input-field">
@@ -1564,6 +1583,7 @@ async function handleSaveDeck() {
       word: g.querySelector(".word-input").value.trim(),
       ipa: g.querySelector(".ipa-input").value.trim(),
       meaning: g.querySelector(".meaning-input").value.trim(),
+      word_type: g.querySelector(".word-type-select")?.value || "",
       example: { en: g.querySelector(".example-en-input").value.trim(), vi: g.querySelector(".example-vi-input").value.trim() },
     }))
     .filter((w) => w.word && w.meaning);
@@ -3891,3 +3911,30 @@ function showMaintenanceOverlay(data) {
     }
   };
 })();
+// =========================================================
+// AI WORD TYPE DETECTION
+// =========================================================
+window.autoDetectWordTypeMain = async function(input) {
+  const word = input.value.trim();
+  if (!word) return;
+  const group = input.closest('.word-input-group');
+  const select = group?.querySelector('.word-type-select');
+  if (!select || select.value) return;
+  try {
+    const token = (currentUser && currentUser.token) || localStorage.getItem('vocabflow_authToken');
+    const res = await fetch(`${BACKEND_API_URL}/ai/word-type`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ word })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.word_type) {
+        select.value = data.word_type;
+        select.style.background = 'hsl(158 64% 42% / 0.12)';
+        select.style.borderColor = 'hsl(158 64% 42% / 0.4)';
+        setTimeout(() => { select.style.background = ''; select.style.borderColor = ''; }, 2500);
+      }
+    }
+  } catch(e) { console.warn('word-type:', e); }
+};

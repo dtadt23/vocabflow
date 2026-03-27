@@ -455,6 +455,41 @@ def delete_avatar():
 # =========================================================
 # AI Pronunciation Check
 # =========================================================
+
+@app.route('/api/ai/word-type', methods=['POST'])
+@jwt_required()
+def detect_word_type():
+    """AI tự nhận diện loại từ (n./v./adj./adv./prep./pron./conj./int.)"""
+    try:
+        data = request.get_json()
+        word = data.get('word', '').strip()
+        if not word:
+            return jsonify({"msg": "Missing word"}), 400
+
+        prompt = f"""What is the primary part of speech of the English word "{word}"?
+Reply with ONLY one of these abbreviations: n. v. adj. adv. prep. pron. conj. int.
+No explanation, no period at end, just the abbreviation."""
+
+        result = call_gemini_api_simple([{"role": "user", "parts": [{"text": prompt}]}])
+        if not result:
+            return jsonify({"msg": "AI error"}), 500
+
+        # Parse kết quả — chỉ lấy từ viết tắt hợp lệ
+        valid = {"n.", "v.", "adj.", "adv.", "prep.", "pron.", "conj.", "int."}
+        cleaned = result.strip().lower().rstrip('.') + '.'
+        # fallback: tìm trong result
+        word_type = ""
+        for v in valid:
+            if v in result.lower() or v.rstrip('.') in result.lower():
+                word_type = v
+                break
+
+        return jsonify({"word": word, "word_type": word_type}), 200
+    except Exception as e:
+        app.logger.error(f"word-type error: {e}")
+        return jsonify({"msg": "Error"}), 500
+
+
 @app.route('/api/pronunciation/check', methods=['POST'])
 @jwt_required()
 def check_pronunciation():
