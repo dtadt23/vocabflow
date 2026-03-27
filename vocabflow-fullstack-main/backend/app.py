@@ -456,38 +456,63 @@ def delete_avatar():
 # AI Pronunciation Check
 # =========================================================
 
+# Map từ phổ biến để tránh gọi Gemini
+COMMON_WORD_TYPES = {
+    "n.": ["apple","book","cat","dog","house","car","man","woman","child","water","time","day","year","life","world","school","money","food","city","country","music","art","love","heart","mind","hand","eye","face","head","voice","word","name","place","way","thing","part","kind","case","fact","form","group","type","side","point","line","room","person","people","family","friend","teacher","student","team","game","work","job","plan","idea","question","answer","problem","reason","information","knowledge","decision","experience","history","science","technology","language","system","process","result","example","number","level","quality","difference","change","development","research","relationship","situation","ability","opportunity","activity","community","society","education","government","organization","industry","company","business","market","product","service","program","project","position","direction","movement","moment","period","season","event","condition","feature","character","nature","culture","tradition","structure","function","action","reaction","effect","cause","reason","purpose","goal","value","benefit","advantage","challenge","issue","concern","factor","element","aspect","pattern","method","approach","strategy","policy","rule","principle","standard","level","degree","amount","size","number","rate","price","cost","value"],
+    "v.": ["run","walk","talk","speak","think","know","feel","see","hear","say","tell","give","take","make","do","go","come","get","put","set","use","find","try","ask","need","seem","turn","become","show","mean","keep","let","begin","start","happen","follow","move","play","live","believe","hold","bring","write","read","learn","grow","stand","lose","fall","stay","send","watch","work","create","build","develop","provide","help","support","share","open","close","change","improve","increase","reduce","continue","allow","require","include","consider","understand","explain","describe","discuss","decide","choose","agree","appear","remain","represent","contain","produce","cause","affect","influence","control","manage","lead","achieve","succeed","fail","stop","return","receive","accept","complete","establish","organize","identify","apply","analyze","design","perform","operate","communicate","participate","respond","prepare","measure","evaluate","compare","combine","separate","connect","expand","focus","ensure","maintain","achieve","support","enable","enhance","strengthen","address","involve","relate","associate","recognize","determine","select","depend","belong","contribute","replace","reflect","demonstrate","extend","generate","implement","improve","integrate","interpret","investigate","justify","modify","monitor","obtain","overcome","promote","protect","reduce","report","represent","resolve","review","simplify","solve","specify","transform","utilize","validate","verify"],
+    "adj.": ["good","bad","big","small","long","short","old","new","high","low","right","wrong","great","important","different","large","small","few","young","old","easy","difficult","possible","impossible","beautiful","happy","sad","angry","tired","hungry","strong","weak","fast","slow","hot","cold","warm","cool","bright","dark","clean","dirty","safe","dangerous","simple","complex","clear","natural","social","political","economic","physical","mental","emotional","cultural","historical","scientific","technological","traditional","modern","international","national","local","personal","professional","educational","environmental","medical","legal","financial","commercial","industrial","creative","innovative","effective","efficient","practical","logical","critical","positive","negative","active","passive","direct","indirect","formal","informal","general","specific","common","rare","unique","special","similar","different","basic","advanced","standard","extra","additional","main","other","various","available","necessary","important","significant","major","minor","current","future","past","present","recent","original","final","complete","partial","open","closed","free","limited"],
+    "adv.": ["quickly","slowly","carefully","easily","clearly","well","badly","hard","fast","early","late","soon","now","then","here","there","always","never","often","sometimes","usually","already","still","just","also","too","very","quite","really","actually","finally","suddenly","certainly","probably","possibly","naturally","directly","immediately","completely","simply","recently","especially","particularly","generally","obviously","apparently","unfortunately","surprisingly","importantly","effectively","significantly","considerably","substantially","dramatically","ultimately","basically","essentially","specifically","exactly","approximately","relatively","absolutely","entirely","almost","nearly","often","regularly","constantly","frequently","occasionally","rarely","seldom","hardly","barely","mostly","mainly","largely","primarily","partly","partially","apparently","seemingly","truly","genuinely","seriously","carefully","properly","quickly","slowly","quietly","loudly","clearly","poorly"],
+    "prep.": ["in","on","at","to","for","with","from","by","about","of","up","down","over","under","through","between","among","across","along","around","behind","beside","beyond","during","except","inside","outside","near","off","onto","out","past","since","throughout","toward","until","upon","within","without","according","despite","following","including","regarding","concerning","considering"],
+    "pron.": ["i","you","he","she","it","we","they","me","him","her","us","them","my","your","his","its","our","their","mine","yours","hers","ours","theirs","this","that","these","those","who","whom","whose","which","what","whoever","whatever","whichever","everyone","someone","anyone","no one","everybody","somebody","anybody","nobody","everything","something","anything","nothing","myself","yourself","himself","herself","itself","ourselves","themselves","each","other","another","such","both","either","neither","all","any","some","few","many","much","more","most","other","several","own"],
+    "conj.": ["and","but","or","nor","for","yet","so","although","because","since","while","when","if","unless","until","after","before","though","even","whereas","whether","both","either","neither","not","as","than","that","which","who"],
+    "int.": ["oh","ah","hey","wow","oops","ouch","ugh","hmm","well","hello","goodbye","yes","no","okay","please","thanks","sorry","excuse"]
+}
+
+_WORD_TYPE_CACHE = {}  # in-memory cache
+
 @app.route('/api/ai/word-type', methods=['POST'])
 @jwt_required()
 def detect_word_type():
-    """AI tự nhận diện loại từ (n./v./adj./adv./prep./pron./conj./int.)"""
+    """AI tự nhận diện loại từ - dùng lookup table trước, Gemini nếu không có"""
     try:
         data = request.get_json()
-        word = data.get('word', '').strip()
+        word = data.get('word', '').strip().lower()
         if not word:
             return jsonify({"msg": "Missing word"}), 400
 
-        prompt = f"""What is the primary part of speech of the English word "{word}"?
-Reply with ONLY one of these abbreviations: n. v. adj. adv. prep. pron. conj. int.
-No explanation, no period at end, just the abbreviation."""
+        # 1. Check cache
+        if word in _WORD_TYPE_CACHE:
+            return jsonify({"word": word, "word_type": _WORD_TYPE_CACHE[word]}), 200
 
-        result = call_gemini_api_simple([{"role": "user", "parts": [{"text": prompt}]}])
-        if not result:
-            return jsonify({"msg": "AI error"}), 500
+        # 2. Lookup table nhanh
+        for wt, words in COMMON_WORD_TYPES.items():
+            if word in words:
+                _WORD_TYPE_CACHE[word] = wt
+                return jsonify({"word": word, "word_type": wt}), 200
 
-        # Parse kết quả — chỉ lấy từ viết tắt hợp lệ
+        # 3. Gọi Gemini cho từ không có trong lookup
+        prompt = f'Part of speech of "{word}": reply ONLY with one: n. v. adj. adv. prep. pron. conj. int.'
+        try:
+            result = call_gemini_api_simple([{"role": "user", "parts": [{"text": prompt}]}])
+        except Exception:
+            # Nếu rate limit hoặc lỗi → trả về rỗng, không báo lỗi 500
+            return jsonify({"word": word, "word_type": ""}), 200
+
         valid = {"n.", "v.", "adj.", "adv.", "prep.", "pron.", "conj.", "int."}
-        cleaned = result.strip().lower().rstrip('.') + '.'
-        # fallback: tìm trong result
         word_type = ""
-        for v in valid:
-            if v in result.lower() or v.rstrip('.') in result.lower():
-                word_type = v
-                break
+        if result:
+            r = result.strip().lower()
+            for v in valid:
+                if v in r or v.rstrip('.') == r.rstrip('.'):
+                    word_type = v
+                    break
 
+        _WORD_TYPE_CACHE[word] = word_type
         return jsonify({"word": word, "word_type": word_type}), 200
+
     except Exception as e:
         app.logger.error(f"word-type error: {e}")
-        return jsonify({"msg": "Error"}), 500
+        return jsonify({"word": "", "word_type": ""}), 200  # trả 200 để frontend không báo lỗi
 
 
 @app.route('/api/pronunciation/check', methods=['POST'])
