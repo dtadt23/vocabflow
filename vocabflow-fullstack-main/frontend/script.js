@@ -1,5 +1,5 @@
 /* ==========================================================================
-   VocabFlow — script.js  |  Session-based AI Chat + Full App Logic
+   VocabFlow — script.js  | Build: 20260327063255  |  Session-based AI Chat + Full App Logic
    ========================================================================== */
 
 const BACKEND_API_URL =
