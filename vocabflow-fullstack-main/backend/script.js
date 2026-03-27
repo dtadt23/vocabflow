@@ -934,6 +934,29 @@ function addWordInputField(word = { word: "", ipa: "", meaning: "", example: { e
     group.remove();
     elements.wordCountInModal.textContent = `${elements.wordInputsContainer.children.length} từ`;
   });
+  // AI auto detect word type khi blur
+  const wordInput = group.querySelector(".word-input");
+  if (wordInput) {
+    wordInput.addEventListener("blur", function() {
+      const w = this.value.trim();
+      if (!w) return;
+      const sel = group.querySelector(".word-type-select");
+      if (!sel || sel.value) return;
+      const token = (currentUser && currentUser.token) || localStorage.getItem("vocabflow_authToken");
+      fetch(`${BACKEND_API_URL}/ai/word-type`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ word: w })
+      }).then(r => r.ok ? r.json() : null).then(data => {
+        if (data && data.word_type) {
+          sel.value = data.word_type;
+          sel.style.background = "hsl(158 64% 42% / 0.12)";
+          sel.style.borderColor = "hsl(158 64% 42% / 0.4)";
+          setTimeout(() => { sel.style.background = ""; sel.style.borderColor = ""; }, 2500);
+        }
+      }).catch(() => {});
+    });
+  }
   elements.wordInputsContainer.appendChild(group);
   elements.wordCountInModal.textContent = `${elements.wordInputsContainer.children.length} từ`;
 }
