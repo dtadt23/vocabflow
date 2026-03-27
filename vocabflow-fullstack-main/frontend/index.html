@@ -3522,7 +3522,7 @@
             try {
               const token = (window.currentUser && window.currentUser.token)
                             || localStorage.getItem('vocabflow_authToken');
-              const apiBase = window.BACKEND_API_URL || 'http://127.0.0.1:5000/api';
+              const apiBase = window.BACKEND_API_URL || 'https://backend-late-bird-6083.fly.dev/api';
               const w = pgWords[pgIndex];
               const res = await fetch(apiBase + '/pronunciation/check', {
                 method: 'POST',
@@ -3559,9 +3559,10 @@
 
         // Feedback list
         let html = '';
-        if (data.correct) html += `<div class="pg-fb-item correct">✅ ${data.correct}</div>`;
-        if (data.errors)  html += `<div class="pg-fb-item error">⚠️ ${data.errors}</div>`;
-        if (data.tip)     html += `<div class="pg-fb-item tip">💡 ${data.tip}</div>`;
+        if (data.transcript) html += `<div class="pg-fb-item" style="background:hsl(var(--muted)/0.4);border-radius:0.5rem;padding:0.4rem 0.75rem;font-size:0.8rem">🎙️ Whisper nhận dạng: <strong>"${data.transcript}"</strong></div>`;
+        if (data.correct)    html += `<div class="pg-fb-item correct">✅ ${data.correct}</div>`;
+        if (data.errors)     html += `<div class="pg-fb-item error">⚠️ ${data.errors}</div>`;
+        if (data.tip)        html += `<div class="pg-fb-item tip">💡 ${data.tip}</div>`;
         if (data.phonetic_feedback) html += `<div class="pg-fb-item phonetic">🔤 ${data.phonetic_feedback}</div>`;
         $('pg-feedback-list').innerHTML = html;
 
@@ -3600,15 +3601,53 @@
 
       // ── Kết quả cuối ────────────────────────────────────────
       function showFinalResult() {
-        $('pronun-overlay').classList.add('hidden');
-        // Hiện summary trong alert đơn giản (có thể làm modal sau)
-        const avg = pgScores.length ? Math.round(pgScores.reduce((a,b)=>a+b,0)/pgScores.length) : 0;
+        const avg  = pgScores.length ? Math.round(pgScores.reduce((a,b)=>a+b,0)/pgScores.length) : 0;
         const best = pgScores.length ? Math.max(...pgScores) : 0;
-        alert(`🎤 Hoàn thành!
+        const color = avg >= 80 ? 'hsl(158 64% 42%)' : avg >= 60 ? 'hsl(45 90% 50%)' : 'hsl(4 86% 56%)';
+        const msg   = avg >= 80 ? 'Xuất sắc! 🌟' : avg >= 60 ? 'Tốt lắm! 👍' : 'Cần luyện thêm! 💪';
 
-Điểm trung bình: ${avg}/100
-Điểm cao nhất: ${best}/100
-Số từ luyện: ${pgScores.length}`);
+        // Tạo modal kết quả cuối
+        let modal = document.getElementById('pronun-final-modal');
+        if (!modal) {
+          modal = document.createElement('div');
+          modal.id = 'pronun-final-modal';
+          modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:1rem';
+          document.body.appendChild(modal);
+        }
+        modal.innerHTML = `
+          <div style="background:hsl(var(--card));border-radius:1.25rem;padding:2rem;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+            <div style="font-size:3rem;margin-bottom:0.5rem">🎤</div>
+            <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:0.25rem">Hoàn thành phiên luyện!</h2>
+            <p style="color:hsl(var(--muted-foreground));font-size:0.9rem;margin-bottom:1.5rem">${msg}</p>
+            <div style="display:flex;justify-content:center;gap:1.5rem;margin-bottom:1.5rem">
+              <div>
+                <div style="font-size:2.5rem;font-weight:800;color:${color}">${avg}</div>
+                <div style="font-size:0.75rem;color:hsl(var(--muted-foreground))">Điểm TB</div>
+              </div>
+              <div style="width:1px;background:hsl(var(--border))"></div>
+              <div>
+                <div style="font-size:2.5rem;font-weight:800;color:hsl(158 64% 42%)">${best}</div>
+                <div style="font-size:0.75rem;color:hsl(var(--muted-foreground))">Cao nhất</div>
+              </div>
+              <div style="width:1px;background:hsl(var(--border))"></div>
+              <div>
+                <div style="font-size:2.5rem;font-weight:800;color:hsl(var(--primary))">${pgScores.length}</div>
+                <div style="font-size:0.75rem;color:hsl(var(--muted-foreground))">Từ luyện</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:0.75rem;justify-content:center">
+              <button onclick="document.getElementById('pronun-final-modal').style.display='none'"
+                style="padding:0.6rem 1.5rem;border-radius:0.75rem;border:1px solid hsl(var(--border));background:transparent;cursor:pointer;font-size:0.9rem">
+                Đóng
+              </button>
+              <button onclick="document.getElementById('pronun-final-modal').style.display='none'; window.startPronunciationMode(pgWords)"
+                style="padding:0.6rem 1.5rem;border-radius:0.75rem;border:none;background:hsl(var(--primary));color:white;cursor:pointer;font-size:0.9rem;font-weight:600">
+                Luyện lại
+              </button>
+            </div>
+          </div>`;
+        modal.style.display = 'flex';
+        $('pronun-overlay').classList.add('hidden');
       }
 
       // ── Khởi động từ nút Bắt Đầu ───────────────────────────
