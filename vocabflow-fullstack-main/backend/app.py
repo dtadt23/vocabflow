@@ -519,101 +519,79 @@ def detect_word_type():
 @jwt_required()
 def check_pronunciation():
     """
-    Chấm điểm phát âm dùng OpenAI Whisper (STT) + GPT-4o-mini (scoring)
-    Flow: audio_b64 → Whisper transcript → GPT so sánh với từ gốc → JSON kết quả
+    Chấm điểm phát âm dùng Gemini multimodal riêng (gemini_pronunciation_key)
+    Không dùng chung key với Chat AI
     """
     try:
         data = request.get_json()
-        word    = data.get('word', '').strip()
-        ipa     = data.get('ipa', '').strip()
+        word      = data.get('word', '').strip()
+        ipa       = data.get('ipa', '').strip()
         audio_b64 = data.get('audio', '')
 
         if not word or not audio_b64:
             return jsonify({"msg": "Thiếu dữ liệu"}), 400
 
-        # Lấy OpenAI key
-        openai_key = get_config_value("openai_api_key", os.getenv("OPENAI_API_KEY", "")).strip()
-        if not openai_key:
-            return jsonify({"msg": "Chưa cấu hình OpenAI API Key. Vào Admin > Cấu hình để thêm."}), 500
+        # Lấy key riêng cho phát âm
+        pronun_key = get_config_value("gemini_pronunciation_key", os.getenv("GEMINI_PRONUNCIATION_KEY", "")).strip()
+        if not pronun_key:
+            return jsonify({"msg": "Chưa cấu hình Gemini key cho Luyện Phát Âm. Vào Admin > Cấu hình để thêm."}), 500
 
         # Decode audio
         if ',' in audio_b64:
             audio_b64 = audio_b64.split(',', 1)[1]
         audio_bytes = base64.b64decode(audio_b64)
+        audio_b64_clean = base64.b64encode(audio_bytes).decode('utf-8')
 
-        # ── BƯỚC 1: Whisper STT ─────────────────────────────
-        whisper_headers = {"Authorization": f"Bearer {openai_key}"}
-        audio_file = ("audio.webm", BytesIO(audio_bytes), "audio/webm")
-        whisper_res = requests.post(
-            "https://api.openai.com/v1/audio/transcriptions",
-            headers=whisper_headers,
-            files={"file": audio_file},
-            data={"model": "whisper-1", "language": "en"},
-            timeout=30
-        )
-        if not whisper_res.ok:
-            app.logger.error(f"Whisper error: {whisper_res.text}")
-            return jsonify({"msg": "Lỗi nhận dạng giọng nói. Thử lại."}), 500
-
-        transcript = whisper_res.json().get("text", "").strip()
-        if not transcript:
-            return jsonify({
-                "score": 0, "overall": "Cần cải thiện",
-                "correct": "", "errors": "Không nhận dạng được giọng nói. Nói to và rõ hơn.",
-                "tip": "Giữ mic gần miệng, nói rõ ràng.", "phonetic_feedback": "",
-                "transcript": ""
-            }), 200
-
-        # ── BƯỚC 2: GPT chấm điểm ───────────────────────────
         ipa_hint = f" (IPA chuẩn: /{ipa}/)" if ipa else ""
-        gpt_prompt = f"""Bạn là giáo viên phát âm tiếng Anh chuyên nghiệp.
-Từ cần đọc: "{word}"{ipa_hint}
-Whisper nhận dạng người học đọc là: "{transcript}"
-
-Hãy đánh giá chất lượng phát âm và trả về JSON (KHÔNG dùng markdown):
+        prompt = f"""Bạn là giáo viên phát âm tiếng Anh chuyên nghiệp.
+Người học vừa đọc từ "{word}"{ipa_hint}.
+Hãy lắng nghe audio và đánh giá phát âm, trả về JSON (KHÔNG dùng markdown):
 {{
   "score": <số nguyên 0-100>,
   "overall": "<Xuất sắc|Tốt|Khá|Cần cải thiện>",
-  "correct": "<điểm phát âm đúng, hoặc rỗng nếu sai hoàn toàn>",
-  "errors": "<lỗi cụ thể ví dụ: âm cuối /d/ bị bỏ, giọng sai accent, hoặc rỗng nếu đúng>",
-  "tip": "<1 mẹo cụ thể để cải thiện, ví dụ: lưỡi đặt sau răng cho âm /θ/>",
-  "phonetic_feedback": "<phân tích ngắn gọn từng âm tiết nếu cần>"
+  "correct": "<điểm phát âm đúng>",
+  "errors": "<lỗi cụ thể nếu có, ví dụ: âm /θ/ phát âm thành /d/>",
+  "tip": "<1 mẹo ngắn để cải thiện>",
+  "phonetic_feedback": "<phân tích ngắn gọn từng âm tiết>"
 }}
+Thang điểm: 90-100 phát âm chuẩn, 70-89 tốt có lỗi nhỏ, 50-69 nhận ra được nhưng sai, dưới 50 sai nhiều."""
 
-Hướng dẫn chấm điểm:
-- 90-100: transcript khớp chính xác từ gốc
-- 70-89: phát âm được nhưng có lỗi nhỏ về accent hoặc âm tiết
-- 50-69: nhận ra được từ nhưng sai rõ ràng
-- 0-49: sai hoàn toàn hoặc không nhận ra từ"""
-
-        gpt_res = requests.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
-            json={
-                "model": "gpt-4o-mini",
-                "messages": [{"role": "user", "content": gpt_prompt}],
-                "temperature": 0.3,
-                "max_tokens": 400
-            },
-            timeout=30
+        # Gọi Gemini multimodal với audio
+        endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
+        payload = {
+            "contents": [{
+                "role": "user",
+                "parts": [
+                    {"inline_data": {"mime_type": "audio/webm", "data": audio_b64_clean}},
+                    {"text": prompt}
+                ]
+            }]
+        }
+        resp = requests.post(
+            endpoint,
+            json=payload,
+            params={"key": pronun_key},
+            timeout=45
         )
-        if not gpt_res.ok:
-            app.logger.error(f"GPT error: {gpt_res.text}")
-            return jsonify({"msg": "Lỗi chấm điểm AI. Thử lại."}), 500
 
-        gpt_text = gpt_res.json()['choices'][0]['message']['content'].strip()
-        clean = gpt_text.replace('```json','').replace('```','').strip()
+        if resp.status_code == 429:
+            return jsonify({"msg": "AI đang quá tải. Thử lại sau vài giây."}), 500
+        if not resp.ok:
+            app.logger.error(f"Gemini pronunciation error: {resp.text}")
+            return jsonify({"msg": "Lỗi phân tích phát âm. Thử lại."}), 500
+
+        result_text = resp.json()['candidates'][0]['content']['parts'][0]['text']
+        clean = result_text.strip().replace('```json','').replace('```','').strip()
         result = json.loads(clean)
-        result['transcript'] = transcript  # thêm transcript để frontend hiển thị
         return jsonify(result), 200
 
     except json.JSONDecodeError as e:
-        app.logger.error(f"JSON parse error in pronunciation: {e}")
+        app.logger.error(f"JSON parse pronunciation: {e}")
         return jsonify({
             "score": 50, "overall": "Khá",
             "correct": "Đã nhận dạng được giọng nói",
             "errors": "", "tip": "Thử lại để có kết quả chính xác hơn.",
-            "phonetic_feedback": "", "transcript": transcript if 'transcript' in dir() else ""
+            "phonetic_feedback": ""
         }), 200
     except Exception as e:
         app.logger.error(f"Pronunciation check error: {str(e)}")
@@ -1552,8 +1530,9 @@ def get_system_config():
         configs = list(config_collection.find({}, {"_id": 0}))
         default_configs = [
             {"key": "gemini_model", "value": "gemini-2.5-flash", "label": "Tên Model AI (Gemini)"},
-            {"key": "gemini_api_key", "value": os.getenv("GEMINI_API_KEY", ""), "label": "Google Gemini API Key"},
-            {"key": "openai_api_key", "value": os.getenv("OPENAI_API_KEY", ""), "label": "OpenAI API Key (Luyện Phát Âm)"},
+            {"key": "gemini_api_key", "value": os.getenv("GEMINI_API_KEY", ""), "label": "Google Gemini API Key (Chat AI)"},
+            {"key": "gemini_pronunciation_key", "value": os.getenv("GEMINI_PRONUNCIATION_KEY", ""), "label": "Google Gemini API Key (Luyện Phát Âm - key riêng)"},
+            {"key": "openai_api_key", "value": os.getenv("OPENAI_API_KEY", ""), "label": "OpenAI API Key (không dùng)"},
             {"key": "xp_per_word", "value": 10, "label": "XP nhận được cho mỗi từ đã học"},
             {"key": "daily_goal_limit", "value": 100, "label": "Giới hạn mục tiêu hàng ngày tối đa"}
         ]
