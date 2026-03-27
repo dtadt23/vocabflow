@@ -941,20 +941,24 @@ function addWordInputField(word = { word: "", ipa: "", meaning: "", example: { e
       const w = this.value.trim();
       if (!w) return;
       const sel = group.querySelector(".word-type-select");
-      if (!sel || sel.value) return;
+      if (!sel || sel.value) return; // đã có loại từ thì bỏ qua
       const token = (currentUser && currentUser.token) || localStorage.getItem("vocabflow_authToken");
+      if (!token) return;
       fetch(`${BACKEND_API_URL}/ai/word-type`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ word: w })
-      }).then(r => r.ok ? r.json() : null).then(data => {
-        if (data && data.word_type) {
+      })
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(data => {
+        if (data && data.word_type && sel) {
           sel.value = data.word_type;
           sel.style.background = "hsl(158 64% 42% / 0.12)";
           sel.style.borderColor = "hsl(158 64% 42% / 0.4)";
-          setTimeout(() => { sel.style.background = ""; sel.style.borderColor = ""; }, 2500);
+          setTimeout(() => { sel.style.background = ""; sel.style.borderColor = ""; }, 2000);
         }
-      }).catch(() => {});
+      })
+      .catch(e => console.warn("[word-type]", e));
     });
   }
   elements.wordInputsContainer.appendChild(group);
@@ -1059,11 +1063,33 @@ async function handleAnalyzeWithAi() {
     document.getElementById("add-selected-words-btn").onclick = () => {
       const selected = localWords.filter(w => w.selected);
       if (!selected.length) { alert("Chọn ít nhất 1 từ."); return; }
-      selected.forEach(w => addWordInputField({
-        id: w.id, word: w.word, ipa: w.ipa || "",
-        meaning: w.meaning,
-        example: { en: w.example_en || "", vi: w.example_vi || "" },
-      }));
+      selected.forEach(w => {
+        addWordInputField({
+          id: w.id, word: w.word, ipa: w.ipa || "",
+          meaning: w.meaning,
+          example: { en: w.example_en || "", vi: w.example_vi || "" },
+        });
+        // AI tự detect word_type cho từ vừa thêm
+        if (w.word) {
+          const lastGroup = elements.wordInputsContainer.lastElementChild;
+          const sel = lastGroup?.querySelector(".word-type-select");
+          if (sel && !sel.value) {
+            const token = (currentUser && currentUser.token) || localStorage.getItem("vocabflow_authToken");
+            fetch(`${BACKEND_API_URL}/ai/word-type`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+              body: JSON.stringify({ word: w.word })
+            }).then(r => r.ok ? r.json() : null).then(data => {
+              if (data && data.word_type && sel) {
+                sel.value = data.word_type;
+                sel.style.background = "hsl(158 64% 42% / 0.12)";
+                sel.style.borderColor = "hsl(158 64% 42% / 0.4)";
+                setTimeout(() => { sel.style.background = ""; sel.style.borderColor = ""; }, 2000);
+              }
+            }).catch(() => {});
+          }
+        }
+      });
       previewContainer.classList.add("hidden");
       elements.quickImportText.value = "";
       if (elements.aiFileInput) elements.aiFileInput.value = "";
