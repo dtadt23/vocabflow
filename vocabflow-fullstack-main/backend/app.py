@@ -519,79 +519,82 @@ def detect_word_type():
 @jwt_required()
 def check_pronunciation():
     """
-    Chấm điểm phát âm dùng Gemini multimodal riêng (gemini_pronunciation_key)
-    Không dùng chung key với Chat AI
+    Chấm điểm phát âm:
+    - Frontend dùng Web Speech API (browser) nhận dạng giọng → gửi transcript text
+    - Backend dùng Gemini key riêng chấm điểm transcript vs từ gốc
+    - Không gửi audio file → nhẹ, nhanh, không lỗi
     """
     try:
         data = request.get_json()
-        word      = data.get('word', '').strip()
-        ipa       = data.get('ipa', '').strip()
-        audio_b64 = data.get('audio', '')
+        word       = data.get('word', '').strip()
+        ipa        = data.get('ipa', '').strip()
+        transcript = data.get('transcript', '').strip()
 
-        if not word or not audio_b64:
-            return jsonify({"msg": "Thiếu dữ liệu"}), 400
+        if not word:
+            return jsonify({"msg": "Thiếu từ cần kiểm tra"}), 400
+
+        if not transcript:
+            return jsonify({
+                "score": 0, "overall": "Cần cải thiện",
+                "correct": "",
+                "errors": "Không nhận dạng được giọng nói. Hãy nói to và rõ hơn.",
+                "tip": "Giữ mic gần miệng, phát âm rõ ràng từng âm.",
+                "phonetic_feedback": "", "transcript": ""
+            }), 200
 
         # Lấy key riêng cho phát âm
         pronun_key = get_config_value("gemini_pronunciation_key", os.getenv("GEMINI_PRONUNCIATION_KEY", "")).strip()
         if not pronun_key:
-            return jsonify({"msg": "Chưa cấu hình Gemini key cho Luyện Phát Âm. Vào Admin > Cấu hình để thêm."}), 500
-
-        # Decode audio
-        if ',' in audio_b64:
-            audio_b64 = audio_b64.split(',', 1)[1]
-        audio_bytes = base64.b64decode(audio_b64)
-        audio_b64_clean = base64.b64encode(audio_bytes).decode('utf-8')
+            return jsonify({"msg": "Chưa cấu hình Gemini key cho Luyện Phát Âm."}), 500
 
         ipa_hint = f" (IPA chuẩn: /{ipa}/)" if ipa else ""
         prompt = f"""Bạn là giáo viên phát âm tiếng Anh chuyên nghiệp.
-Người học vừa đọc từ "{word}"{ipa_hint}.
-Hãy lắng nghe audio và đánh giá phát âm, trả về JSON (KHÔNG dùng markdown):
+Từ cần đọc: "{word}"{ipa_hint}
+Người học đọc và hệ thống nhận dạng được: "{transcript}"
+
+So sánh "{transcript}" với "{word}" và đánh giá phát âm.
+Trả về JSON thuần (KHÔNG markdown, KHÔNG giải thích thêm):
 {{
   "score": <số nguyên 0-100>,
   "overall": "<Xuất sắc|Tốt|Khá|Cần cải thiện>",
-  "correct": "<điểm phát âm đúng>",
-  "errors": "<lỗi cụ thể nếu có, ví dụ: âm /θ/ phát âm thành /d/>",
-  "tip": "<1 mẹo ngắn để cải thiện>",
-  "phonetic_feedback": "<phân tích ngắn gọn từng âm tiết>"
+  "correct": "<điểm tốt của phát âm này>",
+  "errors": "<lỗi cụ thể nếu có, hoặc để trống nếu đúng>",
+  "tip": "<1 mẹo cải thiện ngắn gọn>",
+  "phonetic_feedback": "<phân tích âm tiết ngắn nếu cần>"
 }}
-Thang điểm: 90-100 phát âm chuẩn, 70-89 tốt có lỗi nhỏ, 50-69 nhận ra được nhưng sai, dưới 50 sai nhiều."""
+Thang điểm:
+- 95-100: transcript khớp hoàn toàn với từ gốc
+- 80-94: gần đúng, sai nhỏ về accent
+- 60-79: nhận ra được từ nhưng sai một số âm
+- 0-59: sai nhiều hoặc không nhận ra từ"""
 
-        # Gọi Gemini multimodal với audio
-        endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
-        payload = {
-            "contents": [{
-                "role": "user",
-                "parts": [
-                    {"inline_data": {"mime_type": "audio/webm", "data": audio_b64_clean}},
-                    {"text": prompt}
-                ]
-            }]
-        }
+        endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
         resp = requests.post(
             endpoint,
-            json=payload,
+            json={"contents": [{"role": "user", "parts": [{"text": prompt}]}]},
             params={"key": pronun_key},
-            timeout=45
+            timeout=20
         )
 
         if resp.status_code == 429:
             return jsonify({"msg": "AI đang quá tải. Thử lại sau vài giây."}), 500
         if not resp.ok:
-            app.logger.error(f"Gemini pronunciation error: {resp.text}")
-            return jsonify({"msg": "Lỗi phân tích phát âm. Thử lại."}), 500
+            app.logger.error(f"Gemini pronunciation error: {resp.status_code} {resp.text[:200]}")
+            return jsonify({"msg": "Lỗi chấm điểm AI. Thử lại."}), 500
 
         result_text = resp.json()['candidates'][0]['content']['parts'][0]['text']
         clean = result_text.strip().replace('```json','').replace('```','').strip()
         result = json.loads(clean)
+        result['transcript'] = transcript
         return jsonify(result), 200
 
     except json.JSONDecodeError as e:
         app.logger.error(f"JSON parse pronunciation: {e}")
         return jsonify({
-            "score": 50, "overall": "Khá",
-            "correct": "Đã nhận dạng được giọng nói",
-            "errors": "", "tip": "Thử lại để có kết quả chính xác hơn.",
-            "phonetic_feedback": ""
+            "score": 70, "overall": "Tốt",
+            "correct": "Hệ thống nhận dạng được phát âm của bạn",
+            "errors": "", "tip": "Tiếp tục luyện tập!",
+            "phonetic_feedback": "", "transcript": transcript if transcript else ""
         }), 200
     except Exception as e:
         app.logger.error(f"Pronunciation check error: {str(e)}")

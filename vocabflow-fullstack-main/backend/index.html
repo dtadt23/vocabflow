@@ -3442,44 +3442,48 @@
     <script>
     (function() {
       // ── State ──────────────────────────────────────────────
-      let pgWords = [];
-      let pgIndex = 0;
-      let pgScores = [];
-      let mediaRecorder = null;
-      let audioChunks = [];
+      let pgWords   = [];
+      let pgIndex   = 0;
+      let pgScores  = [];
+      let recognition = null;  // Web Speech API
 
       // ── Helpers ────────────────────────────────────────────
       const $ = id => document.getElementById(id);
 
       function showState(name) {
         ['idle','recording','analyzing','result'].forEach(s => {
-          $(`pg-state-${s}`).classList.toggle('hidden', s !== name);
+          const el = $('pg-state-' + s);
+          if (el) el.classList.toggle('hidden', s !== name);
         });
       }
 
       function updateProgress() {
-        $('pronun-current-num').textContent = pgIndex + 1;
-        $('pronun-total-num').textContent = pgWords.length;
+        if ($('pronun-current-num')) $('pronun-current-num').textContent = pgIndex + 1;
+        if ($('pronun-total-num'))   $('pronun-total-num').textContent   = pgWords.length;
         const fill = $('pronun-progress-fill');
         if (fill) fill.style.width = ((pgIndex / pgWords.length) * 100) + '%';
-        // Điểm TB
         if (pgScores.length) {
           const avg = Math.round(pgScores.reduce((a,b)=>a+b,0)/pgScores.length);
-          $('pronun-avg-score') && ($('pronun-avg-score').textContent = avg);
+          if ($('pronun-avg-score')) $('pronun-avg-score').textContent = avg;
         }
       }
 
       function loadWord(idx) {
         if (idx >= pgWords.length) { showFinalResult(); return; }
         const w = pgWords[idx];
-        $('pg-word').textContent = w.word;
-        $('pg-ipa').textContent  = w.ipa ? `/${w.ipa}/` : '';
-        $('pg-meaning').textContent = w.meaning || '';
+        if ($('pg-word'))    $('pg-word').textContent    = w.word;
+        if ($('pg-ipa'))     $('pg-ipa').textContent     = w.ipa ? '/' + w.ipa + '/' : '';
+        if ($('pg-meaning')) $('pg-meaning').textContent = w.meaning || '';
         showState('idle');
         updateProgress();
       }
 
-      // ── Nghe phát âm chuẩn (TTS) ──────────────────────────
+      // ── Kiểm tra Web Speech API ─────────────────────────────
+      function isSpeechSupported() {
+        return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+      }
+
+      // ── Nghe phát âm chuẩn (TTS) ───────────────────────────
       $('pg-listen-btn')?.addEventListener('click', () => {
         const word = pgWords[pgIndex]?.word;
         if (!word) return;
@@ -3494,82 +3498,102 @@
         });
       });
 
-      // ── Bắt đầu ghi âm ─────────────────────────────────────
-      $('pg-mic-start')?.addEventListener('click', async () => {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          audioChunks = [];
-          mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-          mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-          mediaRecorder.start();
-          showState('recording');
-        } catch(e) {
-          alert('Không thể dùng microphone. Vui lòng cấp quyền mic cho trình duyệt.');
+      // ── Bắt đầu ghi âm bằng Web Speech API ────────────────
+      $('pg-mic-start')?.addEventListener('click', () => {
+        if (!isSpeechSupported()) {
+          alert('Trình duyệt không hỗ trợ nhận dạng giọng nói. Vui lòng dùng Chrome!');
+          return;
         }
-      });
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SR();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.continuous = false;
 
-      // ── Dừng và gửi AI phân tích ────────────────────────────
-      $('pg-mic-stop')?.addEventListener('click', () => {
-        if (!mediaRecorder) return;
-        showState('analyzing');
-        mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(t => t.stop());
-
-        mediaRecorder.onstop = async () => {
-          const blob = new Blob(audioChunks, { type: 'audio/webm' });
-          const reader = new FileReader();
-          reader.onload = async ev => {
-            try {
-              const token = (window.currentUser && window.currentUser.token)
-                            || localStorage.getItem('vocabflow_authToken');
-              const apiBase = window.BACKEND_API_URL || 'https://backend-late-bird-6083.fly.dev/api';
-              const w = pgWords[pgIndex];
-              const res = await fetch(apiBase + '/pronunciation/check', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body: JSON.stringify({ word: w.word, ipa: w.ipa || '', audio: ev.target.result })
-              });
-
-              if (!res.ok) throw new Error('Server error');
-              const data = await res.json();
-              renderResult(data, w.word);
-            } catch(e) {
-              renderResult({ score: 0, overall: 'Lỗi kết nối', errors: e.message, correct: '', tip: '' }, pgWords[pgIndex]?.word || '');
-            }
-          };
-          reader.readAsDataURL(blob);
+        recognition.onstart  = () => showState('recording');
+        recognition.onerror  = (e) => {
+          console.warn('Speech error:', e.error);
+          if (e.error === 'no-speech') {
+            renderResult({ score: 0, overall: 'Cần cải thiện',
+              correct: '', errors: 'Không nghe thấy giọng. Nói to hơn!',
+              tip: 'Nhấn mic và đọc ngay, không chờ lâu.', phonetic_feedback: '' },
+              pgWords[pgIndex]?.word || '', '');
+          } else {
+            renderResult({ score: 0, overall: 'Lỗi', correct: '',
+              errors: 'Lỗi mic: ' + e.error, tip: 'Kiểm tra quyền mic trong trình duyệt.',
+              phonetic_feedback: '' }, pgWords[pgIndex]?.word || '', '');
+          }
         };
+        recognition.onresult = (e) => {
+          const transcript = e.results[0][0].transcript.trim();
+          showState('analyzing');
+          sendToBackend(transcript);
+        };
+        recognition.onend = () => {
+          // nếu không có onresult thì đã xử lý ở onerror
+        };
+        recognition.start();
       });
+
+      // ── Dừng ghi âm thủ công ───────────────────────────────
+      $('pg-mic-stop')?.addEventListener('click', () => {
+        if (recognition) { recognition.stop(); }
+      });
+
+      // ── Gửi transcript lên backend ─────────────────────────
+      async function sendToBackend(transcript) {
+        try {
+          const token   = (window.currentUser && window.currentUser.token)
+                          || localStorage.getItem('vocabflow_authToken');
+          const apiBase = window.BACKEND_API_URL || 'https://backend-late-bird-6083.fly.dev/api';
+          const w       = pgWords[pgIndex] || {};
+          const res = await fetch(apiBase + '/pronunciation/check', {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body   : JSON.stringify({ word: w.word, ipa: w.ipa || '', transcript })
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.msg || 'Server error ' + res.status);
+          }
+          const data = await res.json();
+          renderResult(data, w.word, transcript);
+        } catch(e) {
+          renderResult({ score: 0, overall: 'Lỗi kết nối', correct: '',
+            errors: e.message, tip: 'Kiểm tra kết nối mạng.', phonetic_feedback: '' },
+            pgWords[pgIndex]?.word || '', '');
+        }
+      }
 
       // ── Render kết quả ──────────────────────────────────────
-      function renderResult(data, word) {
+      function renderResult(data, word, transcript) {
         const score = data.score || 0;
         pgScores.push(score);
 
-        // Score arc SVG
         const arc = $('pg-score-arc');
-        const circumference = 2 * Math.PI * 26; // r=26
-        arc.style.strokeDasharray = circumference;
-        arc.style.strokeDashoffset = circumference * (1 - score / 100);
-        arc.style.stroke = score >= 80 ? 'hsl(158 64% 42%)' : score >= 60 ? 'hsl(45 90% 50%)' : 'hsl(4 86% 56%)';
-        $('pg-score-num').textContent = score;
+        if (arc) {
+          const circ = 2 * Math.PI * 26;
+          arc.style.strokeDasharray  = circ;
+          arc.style.strokeDashoffset = circ * (1 - score / 100);
+          arc.style.stroke = score >= 80 ? 'hsl(158 64% 42%)' : score >= 60 ? 'hsl(45 90% 50%)' : 'hsl(4 86% 56%)';
+        }
+        if ($('pg-score-num'))  $('pg-score-num').textContent  = score;
+        if ($('pg-verdict'))    $('pg-verdict').textContent    = data.overall || '';
+        if ($('pg-verdict-sub')) $('pg-verdict-sub').textContent = word;
 
-        $('pg-verdict').textContent = data.overall || '';
-        $('pg-verdict-sub').textContent = word;
-
-        // Feedback list
         let html = '';
-        if (data.transcript) html += `<div class="pg-fb-item" style="background:hsl(var(--muted)/0.4);border-radius:0.5rem;padding:0.4rem 0.75rem;font-size:0.8rem">🎙️ Whisper nhận dạng: <strong>"${data.transcript}"</strong></div>`;
+        const t = transcript || data.transcript || '';
+        if (t)               html += `<div class="pg-fb-item" style="background:hsl(var(--muted)/0.4);border-radius:0.5rem;padding:0.4rem 0.75rem;font-size:0.8rem">🎙️ Bạn đọc: <strong>"${t}"</strong></div>`;
         if (data.correct)    html += `<div class="pg-fb-item correct">✅ ${data.correct}</div>`;
         if (data.errors)     html += `<div class="pg-fb-item error">⚠️ ${data.errors}</div>`;
         if (data.tip)        html += `<div class="pg-fb-item tip">💡 ${data.tip}</div>`;
         if (data.phonetic_feedback) html += `<div class="pg-fb-item phonetic">🔤 ${data.phonetic_feedback}</div>`;
-        $('pg-feedback-list').innerHTML = html;
+        if ($('pg-feedback-list')) $('pg-feedback-list').innerHTML = html;
 
-        // Session score dots
         const dot = document.createElement('div');
         dot.className = 'pg-score-dot ' + (score >= 80 ? 'great' : score >= 60 ? 'good' : 'poor');
-        dot.title = `${word}: ${score}`;
+        dot.title = word + ': ' + score;
         dot.textContent = score;
         $('pronun-session-scores')?.appendChild(dot);
 
@@ -3577,25 +3601,22 @@
         updateProgress();
       }
 
-      // ── Thử lại từ này ──────────────────────────────────────
+      // ── Thử lại ────────────────────────────────────────────
       $('pg-retry-btn')?.addEventListener('click', () => {
-        pgScores.pop(); // xóa điểm vừa rồi
+        pgScores.pop();
         showState('idle');
       });
 
-      // ── Từ tiếp theo ────────────────────────────────────────
+      // ── Từ tiếp ────────────────────────────────────────────
       $('pg-next-btn')?.addEventListener('click', () => {
         pgIndex++;
         loadWord(pgIndex);
       });
 
-      // ── Thoát ───────────────────────────────────────────────
+      // ── Thoát ──────────────────────────────────────────────
       $('pronun-game-close')?.addEventListener('click', () => {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          mediaRecorder.stop();
-          mediaRecorder.stream?.getTracks().forEach(t => t.stop());
-        }
-        $('pronun-overlay').classList.add('hidden');
+        if (recognition) { try { recognition.abort(); } catch(e) {} }
+        $('pronun-overlay')?.classList.add('hidden');
         speechSynthesis.cancel();
       });
 
